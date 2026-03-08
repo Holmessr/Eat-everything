@@ -1,0 +1,104 @@
+import React, { useState } from 'react';
+import { useShopStore } from '../stores/shopStore';
+import ShopCard from '../components/ShopCard';
+import AddShopModal from '../components/AddShopModal';
+import { ShopType } from '../types';
+import { Plus, Search, Filter } from 'lucide-react';
+import { cn } from '../components/Layout';
+
+const Shops: React.FC = () => {
+  const { shops } = useShopStore();
+  const [filterType, setFilterType] = useState<ShopType | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const filteredShops = shops.filter((shop) => {
+    const matchesType = filterType === 'all' || shop.type === filterType;
+    const matchesSearch = shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          shop.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesType && matchesSearch;
+  });
+
+  return (
+    <div className="p-4 md:p-6 space-y-6">
+      <AddShopModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">店铺管理</h1>
+          <p className="text-sm text-gray-500 mt-1">管理你喜爱的 {shops.length} 家店铺</p>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          添加店铺
+        </button>
+      </div>
+
+      {/* Filters & Search */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="搜索店铺名称或标签..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div className="flex bg-gray-100 p-1 rounded-lg">
+          <button
+            onClick={() => setFilterType('all')}
+            className={cn(
+              "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
+              filterType === 'all' ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
+            )}
+          >
+            全部
+          </button>
+          <button
+            onClick={() => setFilterType('delivery')}
+            className={cn(
+              "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
+              filterType === 'delivery' ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
+            )}
+          >
+            外卖
+          </button>
+          <button
+            onClick={() => setFilterType('dine-in')}
+            className={cn(
+              "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
+              filterType === 'dine-in' ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
+            )}
+          >
+            堂食
+          </button>
+        </div>
+      </div>
+
+      {/* Shop List */}
+      {filteredShops.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredShops.map((shop) => (
+            <ShopCard key={shop.id} shop={shop} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
+          <div className="bg-gray-100 p-4 rounded-full mb-4">
+            <Filter className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900">没有找到店铺</h3>
+          <p className="mt-1">尝试调整搜索词或筛选条件</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Shops;
