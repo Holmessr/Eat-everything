@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { useShopStore } from '../stores/shopStore';
 import ShopCard from '../components/ShopCard';
 import AddShopModal from '../components/AddShopModal';
-import { ShopType } from '../types';
+import { ShopType, Shop } from '../types';
 import { Plus, Search, Filter } from 'lucide-react';
-import { cn } from '../components/Layout';
+import { cn } from '../lib/utils';
 
 const Shops: React.FC = () => {
-  const { shops } = useShopStore();
+  const { shops, removeShop } = useShopStore();
   const [filterType, setFilterType] = useState<ShopType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingShop, setEditingShop] = useState<Shop | null>(null);
 
   const filteredShops = shops.filter((shop) => {
     const matchesType = filterType === 'all' || shop.type === filterType;
@@ -19,9 +20,25 @@ const Shops: React.FC = () => {
     return matchesType && matchesSearch;
   });
 
+  const handleEdit = (shop: Shop) => {
+    setEditingShop(shop);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (shop: Shop) => {
+      if (confirm('确定要删除这个店铺吗？')) {
+          removeShop(shop.id);
+      }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingShop(null);
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <AddShopModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AddShopModal isOpen={isModalOpen} onClose={handleCloseModal} editShop={editingShop} />
       
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -85,7 +102,12 @@ const Shops: React.FC = () => {
       {filteredShops.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredShops.map((shop) => (
-            <ShopCard key={shop.id} shop={shop} />
+            <ShopCard 
+                key={shop.id} 
+                shop={shop} 
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+            />
           ))}
         </div>
       ) : (

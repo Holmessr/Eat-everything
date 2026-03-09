@@ -7,6 +7,7 @@ export interface Shop {
   rating: number; // 1-5
   tags: string[];
   imageUrl?: string;
+  images?: string[]; // Multiple images support
   visitCount: number;
   lastVisited?: string; // ISO date string
   description?: string;
@@ -23,6 +24,7 @@ export interface Recipe {
   rating: number;
   tags: string[];
   imageUrl?: string;
+  images?: string[]; // Multiple images support
   difficulty: RecipeDifficulty;
   prepTime: number; // in minutes
   cookTime: number; // in minutes

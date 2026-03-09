@@ -2,41 +2,53 @@ import { Router, Request, Response } from 'express';
 
 const router = Router();
 
-// DeepSeek Chat Completion Mock
 router.post('/recommend', async (req: Request, res: Response) => {
   try {
-    const { userPreferences, context } = req.body;
-    
-    // TODO: Integrate with DeepSeek API
-    // const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
-    //   },
-    //   body: JSON.stringify({
-    //     model: "deepseek-chat",
-    //     messages: [
-    //       { role: "system", content: "You are a professional nutritionist and chef." },
-    //       { role: "user", content: "Recommend a meal..." }
-    //     ]
-    //   })
-    // });
-
-    // Mock Response
-    setTimeout(() => {
-      res.json({
-        success: true,
-        recommendation: {
-          reason: "Based on your preference for spicy food, I recommend this Sichuan dish.",
-          item: "Mock Spicy Tofu",
-          type: "recipe"
-        }
-      });
-    }, 1000);
-    
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'AI Service Error' });
+    const { userPreferences, context } = req.body as {
+      userPreferences?: Record<string, unknown>;
+      context?: {
+        userMessage?: string;
+        shops?: Array<Record<string, unknown>>;
+        recipes?: Array<Record<string, unknown>>;
+      };
+    };
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ success: false, error: 'Missing DeepSeek API key' });
+    }
+    const systemContent =
+      '你是专业的营养规划师和资深大厨。请优先基于用户已导入的店铺和菜谱数据进行健康饮食推荐，并结合用户偏好与消费频率给出可执行建议。';
+    const userContent =
+      `用户问题: ${context?.userMessage ?? ''}\n店铺数据: ${(context?.shops ?? [])
+        .map((s) => JSON.stringify(s))
+        .join('; ')}\n菜谱数据: ${(context?.recipes ?? [])
+        .map((r) => JSON.stringify(r))
+        .join('; ')}\n偏好: ${JSON.stringify(userPreferences ?? {})}`;
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: systemContent },
+          { role: 'user', content: userContent },
+        ],
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ success: false, error: data });
+    }
+    const content =
+      data?.choices?.[0]?.message?.content ??
+      data?.data?.choices?.[0]?.message?.content ??
+      '';
+    return res.json({ success: true, content, raw: data });
+  } catch {
+    return res.status(500).json({ success: false, error: 'AI Service Error' });
   }
 });
 
@@ -44,6 +56,7 @@ router.post('/recommend', async (req: Request, res: Response) => {
 router.post('/ocr', async (req: Request, res: Response) => {
   try {
     const { imageUrl } = req.body;
+    void imageUrl;
 
     // TODO: Integrate with Tesseract.js or other OCR service
     // const worker = await createWorker();
@@ -58,7 +71,7 @@ router.post('/ocr', async (req: Request, res: Response) => {
       });
     }, 1000);
 
-  } catch (error) {
+  } catch {
     res.status(500).json({ success: false, error: 'OCR Service Error' });
   }
 });
