@@ -6,6 +6,7 @@ import { useRecipeStore } from '../stores/recipeStore';
 import { X, Upload, Plus, Loader2 } from 'lucide-react';
 import { Recipe } from '../types';
 import { useTranslation } from 'react-i18next';
+import { compressImage } from '../utils/imageCompression';
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, 'required'),
@@ -17,7 +18,7 @@ const recipeFormSchema = z.object({
   ingredients: z.string(),
   steps: z.string(),
   image_url: z.string().optional().or(z.literal('')), // snake_case
-  source_url: z.string().optional().or(z.literal('')), // snake_case
+  source_url: z.string().min(1, 'required'), // snake_case, required
 });
 
 type RecipeFormValues = z.infer<typeof recipeFormSchema>;
@@ -87,18 +88,18 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
     }
   }, [editRecipe, setValue, reset, isOpen]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === 'string') {
-            setDetailImages(prev => [...prev, reader.result as string]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      const fileArray = Array.from(files);
+      try {
+        const compressedImages = await Promise.all(
+          fileArray.map((file) => compressImage(file, 800, 0.7))
+        );
+        setDetailImages((prev) => [...prev, ...compressedImages]);
+      } catch (error) {
+        console.error('Error compressing images:', error);
+      }
     }
   };
 
@@ -106,16 +107,15 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
     setDetailImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setValue('image_url', reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedDataUrl = await compressImage(file, 800, 0.7);
+        setValue('image_url', compressedDataUrl);
+      } catch (error) {
+        console.error('Error compressing image:', error);
+      }
     }
   };
 
@@ -199,6 +199,15 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
             {errors.name && <p className="text-red-500 text-xs mt-1">{t('recipes.form.validation.nameRequired')}</p>}
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.sourceUrl')}</label>
+            <input
+              {...register('source_url')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder={t('recipes.form.sourceUrlPlaceholder')}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
              <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.difficulty')}</label>
@@ -246,16 +255,17 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.tags')}</label>
-            <input
-              {...register('tags')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder={t('recipes.form.tagsPlaceholder')}
-            />
-          </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.tags')}</label>
+              <input
+                {...register('tags')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder={t('recipes.form.tagsPlaceholder')}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.ingredients')}</label>
+            {/* Moved sourceUrl to top */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.ingredients')}</label>
             <textarea
               {...register('ingredients')}
               rows={4}

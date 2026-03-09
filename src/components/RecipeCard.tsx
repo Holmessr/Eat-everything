@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Recipe } from '../types';
-import { Star, Clock, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { Star, Clock, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface RecipeCardProps {
@@ -33,11 +33,17 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
     hard: t('recipes.difficulty.hard'),
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent opening modal if clicking on buttons or links
-    if ((e.target as HTMLElement).closest('button')) return;
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (allImages.length > 0) {
         setIsModalOpen(true);
+    }
+  };
+
+  const handleTitleClick = (e: React.MouseEvent) => {
+    if (recipe.source_url) {
+      e.stopPropagation();
+      window.open(recipe.source_url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -59,10 +65,12 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
   return (
     <>
       <div 
-        onClick={handleCardClick}
         className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100 group cursor-pointer relative"
       >
-        <div className="relative h-48 bg-gray-200 overflow-hidden">
+        <div 
+          className="relative h-48 bg-gray-200 overflow-hidden"
+          onClick={handleImageClick}
+        >
           {recipe.image_url ? ( // snake_case
             <img
               src={recipe.image_url} // snake_case
@@ -83,9 +91,11 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
              </div>
           )}
         </div>
-        <div className="p-4">
+        <div className="p-4" onClick={handleTitleClick}>
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-bold text-gray-900 truncate pr-8">{recipe.name}</h3>
+            <h3 className={`text-lg font-bold text-gray-900 truncate pr-8 ${recipe.source_url ? 'text-blue-600 hover:underline' : ''}`}>
+              {recipe.name}
+            </h3>
             <div className="flex items-center text-yellow-500 flex-shrink-0">
               <Star className="w-4 h-4 fill-current" />
               <span className="ml-1 text-sm font-medium">{recipe.rating}</span>

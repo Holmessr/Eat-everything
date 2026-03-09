@@ -62,6 +62,10 @@
       "tagsPlaceholder": "例如：快餐, 汉堡, 便宜",
       "address": "地址 (可选)",
       "addressPlaceholder": "例如：南山区科技园...",
+      "platformLink": "链接 (可选)",
+      "platformLinkDineIn": "大众点评/美团链接 (可选)",
+      "platformLinkDelivery": "美团外卖/闪购链接 (可选)",
+      "platformLinkPlaceholder": "粘贴链接，如 https://m.dianping.com/...",
       "desc": "描述 (可选)",
       "descPlaceholder": "写点什么...",
       "moreImages": "更多图片",
@@ -78,6 +82,7 @@
       "delivery": "外卖",
       "dineIn": "堂食",
       "visits": "{{count}} 次光顾",
+      "openLink": "去看看",
       "menu": {
         "edit": "编辑",
         "delete": "删除"
@@ -105,6 +110,8 @@
       "cookTime": "烹饪时间 (分钟)",
       "tags": "标签 (用逗号分隔)",
       "tagsPlaceholder": "例如：家常菜, 快手菜",
+      "sourceUrl": "小红书/下厨房链接 (可选)",
+      "sourceUrlPlaceholder": "粘贴教程链接...",
       "ingredients": "食材 (每行一种)",
       "ingredientsPlaceholder": "例如：\n鸡蛋 2个\n番茄 1个",
       "steps": "步骤 (每行一步)",
@@ -127,6 +134,7 @@
     "card": {
       "mins": "分钟",
       "ingredientsCount": "{{count}} 种食材",
+      "openSource": "看教程",
       "menu": {
         "edit": "编辑",
         "delete": "删除"

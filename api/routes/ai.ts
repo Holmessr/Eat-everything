@@ -20,12 +20,28 @@ router.post('/recommend', async (req: Request, res: Response): Promise<void> => 
     }
     const systemContent =
       '你是专业的营养规划师和资深大厨。请优先基于用户已导入的店铺和菜谱数据进行健康饮食推荐，并结合用户偏好与消费频率给出可执行建议。';
+    
+    // Optimize data size by removing images and unnecessary fields
+    const optimizedShops = (context?.shops ?? []).map((s: any) => ({
+      name: s.name,
+      type: s.type,
+      rating: s.rating,
+      tags: s.tags,
+      visit_count: s.visit_count,
+    }));
+
+    const optimizedRecipes = (context?.recipes ?? []).map((r: any) => ({
+      name: r.name,
+      rating: r.rating,
+      tags: r.tags,
+      difficulty: r.difficulty,
+      prep_time: r.prep_time,
+      cook_time: r.cook_time,
+      ingredients: r.ingredients,
+    }));
+
     const userContent =
-      `用户问题: ${context?.userMessage ?? ''}\n店铺数据: ${(context?.shops ?? [])
-        .map((s) => JSON.stringify(s))
-        .join('; ')}\n菜谱数据: ${(context?.recipes ?? [])
-        .map((r) => JSON.stringify(r))
-        .join('; ')}\n偏好: ${JSON.stringify(userPreferences ?? {})}`;
+      `用户问题: ${context?.userMessage ?? ''}\n店铺数据: ${JSON.stringify(optimizedShops)}\n菜谱数据: ${JSON.stringify(optimizedRecipes)}\n偏好: ${JSON.stringify(userPreferences ?? {})}`;
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {

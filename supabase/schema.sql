@@ -14,6 +14,7 @@ create table public.shops (
   visit_count integer default 0,
   address text,
   description text,
+  platform_link text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

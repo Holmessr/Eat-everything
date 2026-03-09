@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Shop } from '../types';
-import { Star, MapPin, Clock, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { Star, MapPin, Clock, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2, ExternalLink } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface ShopCardProps {
@@ -21,11 +21,17 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
     ...(shop.images || [])
   ];
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Prevent opening modal if clicking on buttons or links
-    if ((e.target as HTMLElement).closest('button')) return;
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (allImages.length > 0) {
         setIsModalOpen(true);
+    }
+  };
+
+  const handleTitleClick = (e: React.MouseEvent) => {
+    if (shop.platform_link) {
+      e.stopPropagation();
+      window.open(shop.platform_link, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -47,10 +53,12 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
   return (
     <>
       <div 
-        onClick={handleCardClick}
         className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100 group cursor-pointer relative"
       >
-        <div className="relative h-48 bg-gray-200 overflow-hidden">
+        <div 
+          className="relative h-48 bg-gray-200 overflow-hidden"
+          onClick={handleImageClick}
+        >
           {shop.image_url ? ( // snake_case
             <img
               src={shop.image_url} // snake_case
@@ -71,9 +79,11 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
              </div>
           )}
         </div>
-        <div className="p-4">
+        <div className="p-4" onClick={handleTitleClick}>
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-bold text-gray-900 truncate pr-8">{shop.name}</h3>
+            <h3 className={`text-lg font-bold text-gray-900 truncate pr-8 ${shop.platform_link ? 'text-blue-600 hover:underline' : ''}`}>
+              {shop.name}
+            </h3>
             <div className="flex items-center text-yellow-500 flex-shrink-0">
               <Star className="w-4 h-4 fill-current" />
               <span className="ml-1 text-sm font-medium">{shop.rating}</span>

@@ -6,6 +6,7 @@ import { useShopStore } from '../stores/shopStore';
 import { X, Upload, Plus, Loader2 } from 'lucide-react';
 import { Shop } from '../types';
 import { useTranslation } from 'react-i18next';
+import { compressImage } from '../utils/imageCompression';
 
 const shopFormSchema = z.object({
   name: z.string().min(1, 'required'),
@@ -15,6 +16,7 @@ const shopFormSchema = z.object({
   image_url: z.string().optional().or(z.literal('')), // snake_case
   address: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
+  platform_link: z.string().optional().or(z.literal('')), // snake_case, optional
 });
 
 type ShopFormValues = z.infer<typeof shopFormSchema>;
@@ -48,6 +50,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       image_url: '',
       address: '',
       description: '',
+      platform_link: '',
     },
   });
 
@@ -61,6 +64,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       setValue('image_url', editShop.image_url || '');
       setValue('address', editShop.address || '');
       setValue('description', editShop.description || '');
+      setValue('platform_link', editShop.platform_link || '');
       setDetailImages(editShop.images || []);
     } else {
       reset({
@@ -71,24 +75,25 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
         image_url: '',
         address: '',
         description: '',
+        platform_link: '',
       });
       setDetailImages([]);
     }
   }, [editShop, setValue, reset, isOpen]);
 
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === 'string') {
-            setDetailImages(prev => [...prev, reader.result as string]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      const fileArray = Array.from(files);
+      try {
+        const compressedImages = await Promise.all(
+          fileArray.map((file) => compressImage(file, 800, 0.7))
+        );
+        setDetailImages((prev) => [...prev, ...compressedImages]);
+      } catch (error) {
+        console.error('Error compressing images:', error);
+      }
     }
   };
 
@@ -96,16 +101,15 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
     setDetailImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-              if (typeof reader.result === 'string') {
-                  setValue('image_url', reader.result);
-              }
-          };
-          reader.readAsDataURL(file);
+        try {
+          const compressedDataUrl = await compressImage(file, 800, 0.7);
+          setValue('image_url', compressedDataUrl);
+        } catch (error) {
+          console.error('Error compressing image:', error);
+        }
       }
   };
 
@@ -120,6 +124,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       image_url: data.image_url,
       address: data.address,
       description: data.description,
+      platform_link: data.platform_link,
       tags: data.tags.split(/[,，]/).map((t) => t.trim()).filter((t) => t.length > 0),
       images: detailImages,
     };
@@ -214,6 +219,18 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
             </div>
 
             <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {watch('type') === 'delivery' ? t('shops.form.platformLinkDelivery') : t('shops.form.platformLinkDineIn')}
+                </label>
+                <input
+                type="url"
+                {...register('platform_link')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('shops.form.platformLinkPlaceholder')}
+                />
+            </div>
+
+            <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('shops.form.tags')}</label>
                 <input
                 {...register('tags')}
@@ -231,6 +248,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
                 />
             </div>
 
+            {/* Removed from bottom, moved up */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('shops.form.desc')}</label>
                 <textarea

@@ -24,3 +24,15 @@
 - `api/`: 后端 Serverless Functions (Express)
 - `supabase/`: 数据库 SQL 脚本
 - `docs/`: 详细文档教程
+
+## 数据库迁移指南
+
+如果你已经创建了数据库表，需要手动更新表结构以支持新功能（如跳转链接）。请在 Supabase 的 **SQL Editor** 中运行以下命令：
+
+```sql
+-- 为 shops 表添加 platform_link 字段
+ALTER TABLE public.shops ADD COLUMN IF NOT EXISTS platform_link text;
+
+-- 为 recipes 表添加 source_url 字段（如果之前已存在可忽略）
+ALTER TABLE public.recipes ADD COLUMN IF NOT EXISTS source_url text;
+```
