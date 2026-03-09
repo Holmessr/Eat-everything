@@ -5,8 +5,10 @@ import AddShopModal from '../components/AddShopModal';
 import { ShopType, Shop } from '../types';
 import { Plus, Search, Filter } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const Shops: React.FC = () => {
+  const { t } = useTranslation();
   const { shops, removeShop } = useShopStore();
   const [filterType, setFilterType] = useState<ShopType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +28,7 @@ const Shops: React.FC = () => {
   };
 
   const handleDelete = (shop: Shop) => {
-      if (confirm('确定要删除这个店铺吗？')) {
+      if (confirm(t('shops.form.confirmDelete'))) {
           removeShop(shop.id);
       }
   };
@@ -43,15 +45,15 @@ const Shops: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">店铺管理</h1>
-          <p className="text-sm text-gray-500 mt-1">管理你喜爱的 {shops.length} 家店铺</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('shops.title')}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t('shops.subtitle', { count: shops.length })}</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4 mr-2" />
-          添加店铺
+          {t('shops.add')}
         </button>
       </div>
 
@@ -61,7 +63,7 @@ const Shops: React.FC = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="搜索店铺名称或标签..."
+            placeholder={t('shops.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -75,7 +77,7 @@ const Shops: React.FC = () => {
               filterType === 'all' ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
             )}
           >
-            全部
+            {t('shops.filter.all')}
           </button>
           <button
             onClick={() => setFilterType('delivery')}
@@ -84,7 +86,7 @@ const Shops: React.FC = () => {
               filterType === 'delivery' ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
             )}
           >
-            外卖
+            {t('shops.filter.delivery')}
           </button>
           <button
             onClick={() => setFilterType('dine-in')}
@@ -93,7 +95,7 @@ const Shops: React.FC = () => {
               filterType === 'dine-in' ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
             )}
           >
-            堂食
+            {t('shops.filter.dineIn')}
           </button>
         </div>
       </div>
@@ -115,8 +117,8 @@ const Shops: React.FC = () => {
           <div className="bg-gray-100 p-4 rounded-full mb-4">
             <Filter className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900">没有找到店铺</h3>
-          <p className="mt-1">尝试调整搜索词或筛选条件</p>
+          <h3 className="text-lg font-medium text-gray-900">{t('shops.empty.title')}</h3>
+          <p className="mt-1">{t('shops.empty.desc')}</p>
         </div>
       )}
     </div>

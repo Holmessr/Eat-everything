@@ -37,7 +37,8 @@ export interface UserProfile {
   id: string;
   name: string;
   avatarUrl?: string;
-  preferences: {
+  bio?: string;
+  preferences?: {
     spicy: number; // 0-5
     sweet: number; // 0-5
     salty: number; // 0-5

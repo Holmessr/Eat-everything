@@ -5,9 +5,10 @@ import * as z from 'zod';
 import { useRecipeStore } from '../stores/recipeStore';
 import { X, Upload, Plus } from 'lucide-react';
 import { Recipe } from '../types';
+import { useTranslation } from 'react-i18next';
 
 const recipeFormSchema = z.object({
-  name: z.string().min(1, '菜谱名称不能为空'),
+  name: z.string().min(1, 'required'),
   rating: z.number().min(1).max(5),
   tags: z.string(),
   difficulty: z.enum(['easy', 'medium', 'hard'] as const),
@@ -28,6 +29,7 @@ interface AddRecipeModalProps {
 }
 
 const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRecipe }) => {
+  const { t } = useTranslation();
   const { addRecipe, updateRecipe } = useRecipeStore();
   const [detailImages, setDetailImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -148,10 +150,10 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg my-8 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col max-h-[calc(100vh-2rem)] md:max-h-[85vh]">
         <div className="flex justify-between items-center p-4 border-b border-gray-100 flex-shrink-0">
-          <h2 className="text-lg font-bold text-gray-900">{editRecipe ? '编辑菜谱' : '添加新菜谱'}</h2>
+          <h2 className="text-lg font-bold text-gray-900">{editRecipe ? t('recipes.edit') : t('recipes.add')}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="w-5 h-5" />
           </button>
@@ -161,13 +163,13 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
             <form id="recipe-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
            {/* Cover Image */}
            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">封面图片</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.cover')}</label>
               <div className="space-y-2">
                   <div className="flex gap-2">
                        <input
                           {...register('imageUrl')}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                          placeholder="输入图片链接或上传本地图片"
+                          placeholder={t('recipes.form.coverPlaceholder')}
                       />
                       <label className="flex items-center justify-center px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
                           <Upload className="w-4 h-4 text-gray-600" />
@@ -183,29 +185,29 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">菜谱名称</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.name')}</label>
             <input
               {...register('name')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="例如：番茄炒蛋"
+              placeholder={t('recipes.form.namePlaceholder')}
             />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+            {errors.name && <p className="text-red-500 text-xs mt-1">{t('recipes.form.validation.nameRequired')}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
              <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">难度</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.difficulty')}</label>
               <select
                 {...register('difficulty')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               >
-                <option value="easy">简单</option>
-                <option value="medium">中等</option>
-                <option value="hard">困难</option>
+                <option value="easy">{t('recipes.difficulty.easy')}</option>
+                <option value="medium">{t('recipes.difficulty.medium')}</option>
+                <option value="hard">{t('recipes.difficulty.hard')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">评分 (1-5)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.rating')}</label>
               <input
                 type="number"
                 step="0.1"
@@ -219,7 +221,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">准备时间 (分钟)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.prepTime')}</label>
               <input
                 type="number"
                 min="0"
@@ -228,7 +230,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">烹饪时间 (分钟)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.cookTime')}</label>
               <input
                 type="number"
                 min="0"
@@ -239,37 +241,37 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">标签 (用逗号分隔)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.tags')}</label>
             <input
               {...register('tags')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="例如：家常菜, 快手菜"
+              placeholder={t('recipes.form.tagsPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">食材 (每行一种)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.ingredients')}</label>
             <textarea
               {...register('ingredients')}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="例如：&#10;鸡蛋 2个&#10;番茄 1个"
+              placeholder={t('recipes.form.ingredientsPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">步骤 (每行一步)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.steps')}</label>
             <textarea
               {...register('steps')}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="例如：&#10;1. 准备食材&#10;2. 开火烹饪"
+              placeholder={t('recipes.form.stepsPlaceholder')}
             />
           </div>
 
           {/* Detail Images */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">更多图片</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.moreImages')}</label>
             <div className="grid grid-cols-3 gap-2">
               {detailImages.map((img, index) => (
                 <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
@@ -285,7 +287,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
               ))}
               <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-500 hover:bg-green-50 transition-colors">
                 <Plus className="w-6 h-6 text-gray-400" />
-                <span className="text-xs text-gray-500 mt-1">添加图片</span>
+                <span className="text-xs text-gray-500 mt-1">{t('recipes.form.addImage')}</span>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -306,7 +308,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
               form="recipe-form"
               className="flex-1 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
             >
-              {editRecipe ? '保存修改' : '添加菜谱'}
+              {editRecipe ? t('recipes.form.save') : t('recipes.form.addSubmit')}
             </button>
         </div>
       </div>

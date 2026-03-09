@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shop } from '../types';
 import { Star, MapPin, Clock, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ShopCardProps {
   shop: Shop;
@@ -9,6 +10,7 @@ interface ShopCardProps {
 }
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
@@ -60,7 +62,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
             </div>
           )}
           <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-gray-700">
-            {shop.type === 'delivery' ? '外卖' : '堂食'}
+            {shop.type === 'delivery' ? t('shops.card.delivery') : t('shops.card.dineIn')}
           </div>
           {shop.images && shop.images.length > 0 && (
              <div className="absolute bottom-2 right-2 bg-black/50 px-2 py-1 rounded-md text-xs text-white">
@@ -91,7 +93,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
           <div className="flex items-center text-gray-500 text-xs space-x-4">
               <div className="flex items-center">
                   <Clock className="w-3 h-3 mr-1" />
-                  <span>{shop.visitCount} 次光顾</span>
+                  <span>{t('shops.card.visits', { count: shop.visitCount })}</span>
               </div>
               {shop.address && (
                    <div className="flex items-center truncate max-w-[150px]">
@@ -129,7 +131,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                                 >
                                     <Edit2 className="w-4 h-4 mr-2" />
-                                    编辑
+                                    {t('shops.card.menu.edit')}
                                 </button>
                             )}
                             {onDelete && (
@@ -142,7 +144,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
                                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                                 >
                                     <Trash2 className="w-4 h-4 mr-2" />
-                                    删除
+                                    {t('shops.card.menu.delete')}
                                 </button>
                             )}
                         </div>

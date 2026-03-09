@@ -6,6 +6,7 @@ import ShopCard from '../components/ShopCard';
 import RecipeCard from '../components/RecipeCard';
 import { Shop, Recipe } from '../types';
 import { cn } from '../lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   id: string;
@@ -15,6 +16,7 @@ interface Message {
 }
 
 const Home: React.FC = () => {
+  const { t } = useTranslation();
   const { shops } = useShopStore();
   const { recipes } = useRecipeStore();
   const [recommendation, setRecommendation] = useState<{ type: 'shop' | 'recipe'; data: Shop | Recipe } | null>(null);
@@ -28,7 +30,7 @@ const Home: React.FC = () => {
     {
       id: '1',
       role: 'assistant',
-      content: '你好！我是你的智能饮食助手。无论是健康饮食规划、菜谱推荐，还是纠结下一顿吃什么，都可以问我哦！',
+      content: t('home.ai.initialMessage'),
       timestamp: Date.now()
     }
   ]);
@@ -41,7 +43,10 @@ const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Only scroll to bottom when new messages added, not on initial load
+    if (messages.length > 1) {
+        scrollToBottom();
+    }
   }, [messages]);
 
   const handleRecommend = () => {
@@ -66,7 +71,7 @@ const Home: React.FC = () => {
       } else {
         // Fallback or empty state handling could go here
         // For now, if no items match, we might want to show a toast or alert
-        alert(`没有找到${selectedType === 'recipe' ? '菜谱' : selectedType === 'delivery' ? '外卖店铺' : '堂食店铺'}，请先添加一些数据！`);
+        alert(`没有找到${selectedType === 'recipe' ? t('home.select.recipe') : selectedType === 'delivery' ? t('home.select.delivery') : t('home.select.dineIn')}，请先添加一些数据！`);
       }
       setIsAnimating(false);
     }, 800);
@@ -106,7 +111,7 @@ const Home: React.FC = () => {
         const content =
           data?.content ??
           data?.choices?.[0]?.message?.content ??
-          '暂时无法获取推荐，请稍后重试';
+          t('home.ai.error');
         const aiMsg: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
@@ -126,16 +131,16 @@ const Home: React.FC = () => {
       {/* 1. 帮我选一个 Section */}
       <div className="space-y-8 text-center">
         <div className="space-y-2 mt-4">
-          <h1 className="text-3xl font-bold text-gray-900">今天吃什么？</h1>
-          <p className="text-gray-500">选择类型，让 AI 为你做出完美的选择</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('home.title')}</h1>
+          <p className="text-gray-500">{t('home.subtitle')}</p>
         </div>
 
         {/* Selection Type Toggles */}
         <div className="flex justify-center gap-2">
             {[
-                { id: 'recipe', label: '自己做 (菜谱)' },
-                { id: 'delivery', label: '点外卖' },
-                { id: 'dine-in', label: '出去吃 (堂食)' }
+                { id: 'recipe', label: t('home.select.recipe') },
+                { id: 'delivery', label: t('home.select.delivery') },
+                { id: 'dine-in', label: t('home.select.dineIn') }
             ].map((type) => (
                 <button
                     key={type.id}
@@ -169,7 +174,7 @@ const Home: React.FC = () => {
           >
             <Sparkles className={cn("w-6 h-6 mr-2", isAnimating && "animate-spin")} />
             <span className="text-lg font-bold">
-              {isAnimating ? '正在思考...' : '帮我选一个'}
+              {isAnimating ? t('home.button.thinking') : t('home.button.recommend')}
             </span>
           </button>
         </div>
@@ -179,7 +184,7 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-center mb-4 space-x-2 text-gray-500">
               {recommendation.type === 'shop' ? <Utensils className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
               <span className="text-sm font-medium">
-                为你推荐了 {recommendation.type === 'shop' ? '一家好店' : '一道美味'}
+                {t('home.recommendation.prefix')} {recommendation.type === 'shop' ? t('home.recommendation.shop') : t('home.recommendation.recipe')}
               </span>
             </div>
             
@@ -196,10 +201,10 @@ const Home: React.FC = () => {
                 onClick={handleRecommend}
                 className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
-                换一个
+                {t('home.button.change')}
               </button>
               <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                就吃这个
+                {t('home.button.choose')}
               </button>
             </div>
           </div>
@@ -209,14 +214,14 @@ const Home: React.FC = () => {
       <hr className="border-gray-100" />
 
       {/* 2. 智能饮食助手 Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[600px]">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[500px]">
         <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
                 <Bot className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-                <h2 className="font-bold text-gray-900">智能饮食助手</h2>
-                <p className="text-xs text-gray-500">Powered by DeepSeek</p>
+                <h2 className="font-bold text-gray-900">{t('home.ai.title')}</h2>
+                <p className="text-xs text-gray-500">{t('home.ai.poweredBy')}</p>
             </div>
         </div>
 
@@ -225,13 +230,13 @@ const Home: React.FC = () => {
                 <div
                     key={msg.id}
                     className={cn(
-                        "flex max-w-[80%]",
-                        msg.role === 'user' ? "ml-auto" : "mr-auto"
+                        "flex w-full", // Ensure full width container
+                        msg.role === 'user' ? "justify-end" : "justify-start" // Flex alignment
                     )}
                 >
                     <div
                         className={cn(
-                            "p-3 rounded-2xl text-sm leading-relaxed",
+                            "p-3 rounded-2xl text-sm leading-relaxed max-w-[80%]", // Max width on bubble
                             msg.role === 'user'
                                 ? "bg-blue-600 text-white rounded-br-none"
                                 : "bg-white text-gray-800 border border-gray-200 rounded-bl-none shadow-sm"
@@ -242,7 +247,7 @@ const Home: React.FC = () => {
                 </div>
             ))}
             {isTyping && (
-                <div className="flex mr-auto max-w-[80%]">
+                <div className="flex w-full justify-start">
                     <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-gray-200 shadow-sm flex items-center space-x-2">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -259,7 +264,7 @@ const Home: React.FC = () => {
                     type="text"
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    placeholder="问问今天该怎么吃健康..."
+                    placeholder={t('home.ai.placeholder')}
                     className="w-full pl-4 pr-12 py-3 bg-gray-100 border-transparent rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none"
                 />
                 <button

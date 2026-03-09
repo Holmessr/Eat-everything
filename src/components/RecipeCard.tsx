@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Recipe } from '../types';
 import { Star, Clock, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -9,6 +10,7 @@ interface RecipeCardProps {
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
@@ -25,9 +27,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
   };
 
   const difficultyLabel = {
-    easy: '简单',
-    medium: '中等',
-    hard: '困难',
+    easy: t('recipes.difficulty.easy'),
+    medium: t('recipes.difficulty.medium'),
+    hard: t('recipes.difficulty.hard'),
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -103,11 +105,11 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
           <div className="flex items-center text-gray-500 text-xs space-x-4">
               <div className="flex items-center">
                   <Clock className="w-3 h-3 mr-1" />
-                  <span>{recipe.prepTime + recipe.cookTime} 分钟</span>
+                  <span>{recipe.prepTime + recipe.cookTime} {t('recipes.card.mins')}</span>
               </div>
               <div className="flex items-center">
                   <ChefHat className="w-3 h-3 mr-1" />
-                  <span>{recipe.ingredients.length} 种食材</span>
+                  <span>{t('recipes.card.ingredientsCount', { count: recipe.ingredients.length })}</span>
               </div>
           </div>
         </div>
@@ -139,7 +141,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
                                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center"
                                 >
                                     <Edit2 className="w-4 h-4 mr-2" />
-                                    编辑
+                                    {t('recipes.card.menu.edit')}
                                 </button>
                             )}
                             {onDelete && (
@@ -152,7 +154,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
                                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                                 >
                                     <Trash2 className="w-4 h-4 mr-2" />
-                                    删除
+                                    {t('recipes.card.menu.delete')}
                                 </button>
                             )}
                         </div>

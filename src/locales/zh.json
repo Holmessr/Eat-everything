@@ -1,0 +1,146 @@
+{
+  "app": {
+    "title": "吃什么",
+    "description": "解决你的选择困难症"
+  },
+  "nav": {
+    "home": "首页",
+    "shops": "店铺",
+    "recipes": "菜谱",
+    "profile": "我的"
+  },
+  "home": {
+    "title": "今天吃什么？",
+    "subtitle": "选择类型，让 AI 为你做出完美的选择",
+    "select": {
+      "recipe": "自己做 (菜谱)",
+      "delivery": "点外卖",
+      "dineIn": "出去吃 (堂食)"
+    },
+    "button": {
+      "thinking": "正在思考...",
+      "recommend": "帮我选一个",
+      "change": "换一个",
+      "choose": "就吃这个"
+    },
+    "recommendation": {
+      "shop": "一家好店",
+      "recipe": "一道美味",
+      "prefix": "为你推荐了"
+    },
+    "ai": {
+      "title": "智能饮食助手",
+      "poweredBy": "Powered by DeepSeek",
+      "placeholder": "问问今天该怎么吃健康...",
+      "initialMessage": "你好！我是你的智能饮食助手。无论是健康饮食规划、菜谱推荐，还是纠结下一顿吃什么，都可以问我哦！",
+      "error": "暂时无法获取推荐，请稍后重试"
+    }
+  },
+  "shops": {
+    "title": "店铺管理",
+    "subtitle": "管理你喜爱的 {{count}} 家店铺",
+    "add": "添加店铺",
+    "edit": "编辑店铺",
+    "search": "搜索店铺名称或标签...",
+    "filter": {
+      "all": "全部",
+      "delivery": "外卖",
+      "dineIn": "堂食"
+    },
+    "empty": {
+      "title": "没有找到店铺",
+      "desc": "尝试调整搜索词或筛选条件"
+    },
+    "form": {
+      "cover": "封面图片",
+      "coverPlaceholder": "输入图片链接或上传本地图片",
+      "name": "店铺名称",
+      "namePlaceholder": "例如：麦当劳",
+      "type": "类型",
+      "rating": "评分 (1-5)",
+      "tags": "标签 (用逗号分隔)",
+      "tagsPlaceholder": "例如：快餐, 汉堡, 便宜",
+      "address": "地址 (可选)",
+      "addressPlaceholder": "例如：南山区科技园...",
+      "desc": "描述 (可选)",
+      "descPlaceholder": "写点什么...",
+      "moreImages": "更多图片",
+      "addImage": "添加图片",
+      "delete": "删除",
+      "save": "保存修改",
+      "addSubmit": "添加店铺",
+      "confirmDelete": "确定要删除这个店铺吗？",
+      "validation": {
+        "nameRequired": "店铺名称不能为空"
+      }
+    },
+    "card": {
+      "delivery": "外卖",
+      "dineIn": "堂食",
+      "visits": "{{count}} 次光顾",
+      "menu": {
+        "edit": "编辑",
+        "delete": "删除"
+      }
+    }
+  },
+  "recipes": {
+    "title": "菜谱大全",
+    "subtitle": "收藏和整理你的 {{count}} 道专属菜谱",
+    "add": "添加菜谱",
+    "edit": "编辑菜谱",
+    "search": "搜索菜谱名称、食材或标签...",
+    "empty": {
+      "title": "没有找到菜谱",
+      "desc": "尝试调整搜索词"
+    },
+    "form": {
+      "cover": "封面图片",
+      "coverPlaceholder": "输入图片链接或上传本地图片",
+      "name": "菜谱名称",
+      "namePlaceholder": "例如：番茄炒蛋",
+      "difficulty": "难度",
+      "rating": "评分 (1-5)",
+      "prepTime": "准备时间 (分钟)",
+      "cookTime": "烹饪时间 (分钟)",
+      "tags": "标签 (用逗号分隔)",
+      "tagsPlaceholder": "例如：家常菜, 快手菜",
+      "ingredients": "食材 (每行一种)",
+      "ingredientsPlaceholder": "例如：\n鸡蛋 2个\n番茄 1个",
+      "steps": "步骤 (每行一步)",
+      "stepsPlaceholder": "例如：\n1. 准备食材\n2. 开火烹饪",
+      "moreImages": "更多图片",
+      "addImage": "添加图片",
+      "delete": "删除",
+      "save": "保存修改",
+      "addSubmit": "添加菜谱",
+      "confirmDelete": "确定要删除这个菜谱吗？",
+      "validation": {
+        "nameRequired": "菜谱名称不能为空"
+      }
+    },
+    "difficulty": {
+      "easy": "简单",
+      "medium": "中等",
+      "hard": "困难"
+    },
+    "card": {
+      "mins": "分钟",
+      "ingredientsCount": "{{count}} 种食材",
+      "menu": {
+        "edit": "编辑",
+        "delete": "删除"
+      }
+    }
+  },
+  "profile": {
+    "title": "个人中心",
+    "subtitle": "管理你的个人资料",
+    "changeAvatar": "点击更换头像",
+    "nickname": "昵称",
+    "bio": "个性签名",
+    "bioPlaceholder": "写一句话介绍自己...",
+    "save": "保存修改",
+    "success": "保存成功！"
+  }
+}

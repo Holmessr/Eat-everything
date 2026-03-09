@@ -4,8 +4,10 @@ import RecipeCard from '../components/RecipeCard';
 import AddRecipeModal from '../components/AddRecipeModal';
 import { Plus, Search, Filter } from 'lucide-react';
 import { Recipe } from '../types';
+import { useTranslation } from 'react-i18next';
 
 const Recipes: React.FC = () => {
+  const { t } = useTranslation();
   const { recipes, removeRecipe } = useRecipeStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,7 +25,7 @@ const Recipes: React.FC = () => {
   };
 
   const handleDelete = (recipe: Recipe) => {
-      if (confirm('确定要删除这个菜谱吗？')) {
+      if (confirm(t('recipes.form.confirmDelete'))) {
           removeRecipe(recipe.id);
       }
   };
@@ -40,15 +42,15 @@ const Recipes: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">菜谱大全</h1>
-          <p className="text-sm text-gray-500 mt-1">收藏和整理你的 {recipes.length} 道专属菜谱</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('recipes.title')}</h1>
+          <p className="text-sm text-gray-500 mt-1">{t('recipes.subtitle', { count: recipes.length })}</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4 mr-2" />
-          添加菜谱
+          {t('recipes.add')}
         </button>
       </div>
 
@@ -57,7 +59,7 @@ const Recipes: React.FC = () => {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder="搜索菜谱名称、食材或标签..."
+          placeholder={t('recipes.search')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -81,8 +83,8 @@ const Recipes: React.FC = () => {
           <div className="bg-gray-100 p-4 rounded-full mb-4">
             <Filter className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900">没有找到菜谱</h3>
-          <p className="mt-1">尝试调整搜索词</p>
+          <h3 className="text-lg font-medium text-gray-900">{t('recipes.empty.title')}</h3>
+          <p className="mt-1">{t('recipes.empty.desc')}</p>
         </div>
       )}
     </div>

@@ -15,7 +15,7 @@ import aiRoutes from './routes/ai.js'
 // load env
 dotenv.config()
 
-const app: express.Application = express()
+const app = express()
 
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
@@ -30,9 +30,9 @@ app.use('/api/ai', aiRoutes)
 /**
  * health
  */
-app.use(
+app.get(
   '/api/health',
-  (req: Request, res: Response): void => {
+  (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: 'ok',
@@ -44,7 +44,7 @@ app.use(
  * error handler middleware
  */
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-  void next
+  // void next
   res.status(500).json({
     success: false,
     error: 'Server internal error',
@@ -61,4 +61,4 @@ app.use((req: Request, res: Response) => {
   })
 })
 
-export default app
+export default app;

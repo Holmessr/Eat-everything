@@ -2,13 +2,16 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { Home, Store, Utensils, User } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const Layout: React.FC = () => {
+  const { t } = useTranslation();
+  
   const navItems = [
-    { to: '/', icon: Home, label: '首页' },
-    { to: '/shops', icon: Store, label: '店铺' },
-    { to: '/recipes', icon: Utensils, label: '菜谱' },
-    { to: '/profile', icon: User, label: '我的' },
+    { to: '/', icon: Home, label: t('nav.home') },
+    { to: '/shops', icon: Store, label: t('nav.shops') },
+    { to: '/recipes', icon: Utensils, label: t('nav.recipes') },
+    { to: '/profile', icon: User, label: t('nav.profile') },
   ];
 
   return (
@@ -16,7 +19,7 @@ const Layout: React.FC = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200">
         <div className="p-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-primary">吃什么</h1>
+          <h1 className="text-xl font-bold text-primary">{t('app.title')}</h1>
         </div>
         <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => (

@@ -21,10 +21,14 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.1",
     "express": "^4.21.2",
+    "i18next": "^25.8.14",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "i18next-http-backend": "^3.0.2",
     "lucide-react": "^0.511.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.71.2",
+    "react-i18next": "^16.5.6",
     "react-router-dom": "^7.3.0",
     "tailwind-merge": "^3.0.2",
     "zod": "^3.24.1",
@@ -52,7 +56,6 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.5",
-    "vite-plugin-trae-solo-badge": "^1.0.0",
     "vite-tsconfig-paths": "^5.1.4"
   },
   "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8"
