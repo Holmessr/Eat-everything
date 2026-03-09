@@ -4,6 +4,7 @@ import { useRecipeStore } from '../stores/recipeStore';
 import { Sparkles, Utensils, RefreshCw, Send, Bot } from 'lucide-react';
 import ShopCard from '../components/ShopCard';
 import RecipeCard from '../components/RecipeCard';
+import MarkdownRenderer from '../components/MarkdownRenderer';
 import { Shop, Recipe } from '../types';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -242,7 +243,7 @@ const Home: React.FC = () => {
                                 : "bg-white text-gray-800 border border-gray-200 rounded-bl-none shadow-sm"
                         )}
                     >
-                        {msg.content}
+                        <MarkdownRenderer content={msg.content} isUser={msg.role === 'user'} />
                     </div>
                 </div>
             ))}

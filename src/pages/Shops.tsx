@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useShopStore } from '../stores/shopStore';
 import ShopCard from '../components/ShopCard';
 import AddShopModal from '../components/AddShopModal';
 import { ShopType, Shop } from '../types';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
 
 const Shops: React.FC = () => {
   const { t } = useTranslation();
-  const { shops, removeShop } = useShopStore();
+  const { shops, removeShop, fetchShops, loading } = useShopStore();
   const [filterType, setFilterType] = useState<ShopType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
+
+  useEffect(() => {
+    fetchShops();
+  }, [fetchShops]);
 
   const filteredShops = shops.filter((shop) => {
     const matchesType = filterType === 'all' || shop.type === filterType;
@@ -27,10 +31,8 @@ const Shops: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (shop: Shop) => {
-      if (confirm(t('shops.form.confirmDelete'))) {
-          removeShop(shop.id);
-      }
+  const handleDelete = async (shop: Shop) => {
+      await removeShop(shop.id);
   };
 
   const handleCloseModal = () => {
@@ -101,7 +103,11 @@ const Shops: React.FC = () => {
       </div>
 
       {/* Shop List */}
-      {filteredShops.length > 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
+      ) : filteredShops.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredShops.map((shop) => (
             <ShopCard 

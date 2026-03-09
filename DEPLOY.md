@@ -13,6 +13,8 @@
 ### 1.2 创建数据表
 进入 Supabase 的 **SQL Editor**，运行以下 SQL 脚本以创建所需的数据表：
 
+> **注意：** 数据库字段使用 `snake_case`（下划线命名），而前端代码使用 `camelCase`（驼峰命名）。在进行二次开发时，请注意字段名的映射转换。
+
 ```sql
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
@@ -65,6 +67,64 @@ create policy "Users can view their own recipes" on recipes for select using (au
 create policy "Users can insert their own recipes" on recipes for insert with check (auth.uid() = user_id);
 create policy "Users can update their own recipes" on recipes for update using (auth.uid() = user_id);
 create policy "Users can delete their own recipes" on recipes for delete using (auth.uid() = user_id);
+
+-- 4. User Profiles Table (New)
+create table public.profiles (
+  id uuid references auth.users(id) on delete cascade primary key,
+  name text,
+  avatar_url text,
+  bio text,
+  preferences jsonb default '{}',
+  updated_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+alter table public.profiles enable row level security;
+
+create policy "Users can view their own profile" on profiles for select using (auth.uid() = id);
+create policy "Users can update their own profile" on profiles for update using (auth.uid() = id);
+create policy "Users can insert their own profile" on profiles for insert with check (auth.uid() = id);
+
+-- 5. Trigger to create profile on signup
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, name, avatar_url, bio)
+  values (new.id, new.raw_user_meta_data->>'name', new.raw_user_meta_data->>'avatar_url', '');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+-- 6. Storage Bucket for Avatars
+-- Step 1: Create a public bucket named 'avatars' in Supabase Storage UI.
+-- Step 2: Run the following SQL to allow authenticated uploads/updates:
+
+create policy "Allow authenticated uploads"
+on storage.objects
+for insert
+to authenticated
+with check (
+  bucket_id = 'avatars' and
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+create policy "Allow authenticated updates"
+on storage.objects
+for update
+to authenticated
+using (
+  bucket_id = 'avatars' and
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+create policy "Allow public read"
+on storage.objects
+for select
+to public
+using ( bucket_id = 'avatars' );
 ```
 
 ## 2. DeepSeek API 接入

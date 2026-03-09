@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRecipeStore } from '../stores/recipeStore';
 import RecipeCard from '../components/RecipeCard';
 import AddRecipeModal from '../components/AddRecipeModal';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Loader2 } from 'lucide-react';
 import { Recipe } from '../types';
 import { useTranslation } from 'react-i18next';
 
 const Recipes: React.FC = () => {
   const { t } = useTranslation();
-  const { recipes, removeRecipe } = useRecipeStore();
+  const { recipes, removeRecipe, fetchRecipes, loading } = useRecipeStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+
+  useEffect(() => {
+    fetchRecipes();
+  }, [fetchRecipes]);
 
   const filteredRecipes = recipes.filter((recipe) => {
     return recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -24,10 +28,8 @@ const Recipes: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (recipe: Recipe) => {
-      if (confirm(t('recipes.form.confirmDelete'))) {
-          removeRecipe(recipe.id);
-      }
+  const handleDelete = async (recipe: Recipe) => {
+      await removeRecipe(recipe.id);
   };
 
   const handleCloseModal = () => {
@@ -67,7 +69,11 @@ const Recipes: React.FC = () => {
       </div>
 
       {/* Recipe List */}
-      {filteredRecipes.length > 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+        </div>
+      ) : filteredRecipes.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRecipes.map((recipe) => (
             <RecipeCard 

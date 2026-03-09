@@ -13,7 +13,8 @@ import authRoutes from './routes/auth.js'
 import aiRoutes from './routes/ai.js'
 
 // load env
-dotenv.config()
+dotenv.config({ path: '.env.local' });
+dotenv.config(); // fallback to .env if .env.local not found
 
 const app = express()
 
@@ -44,7 +45,6 @@ app.get(
  * error handler middleware
  */
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-  // void next
   res.status(500).json({
     success: false,
     error: 'Server internal error',

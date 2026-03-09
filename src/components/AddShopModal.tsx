@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useShopStore } from '../stores/shopStore';
-import { X, Upload, Plus } from 'lucide-react';
+import { X, Upload, Plus, Loader2 } from 'lucide-react';
 import { Shop } from '../types';
 import { useTranslation } from 'react-i18next';
 
@@ -27,7 +27,7 @@ interface AddShopModalProps {
 
 const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }) => {
   const { t } = useTranslation();
-  const { addShop, updateShop } = useShopStore();
+  const { addShop, updateShop, loading } = useShopStore();
   const [detailImages, setDetailImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -110,7 +110,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
   };
 
 
-  const onSubmit = (data: ShopFormValues) => {
+  const onSubmit = async (data: ShopFormValues) => {
     const shopData: Shop = {
       ...data,
       name: data.name,
@@ -125,15 +125,20 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       images: detailImages,
     };
 
-    if (editShop) {
-      updateShop(editShop.id, shopData);
-    } else {
-      addShop(shopData);
+    try {
+      if (editShop) {
+        await updateShop(editShop.id, shopData);
+      } else {
+        await addShop(shopData);
+      }
+      
+      reset();
+      setDetailImages([]);
+      onClose();
+    } catch (error) {
+      console.error('Submit error:', error);
+      // Optional: show toast error here
     }
-    
-    reset();
-    setDetailImages([]);
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -273,9 +278,10 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
             <button
               type="submit"
               form="shop-form"
-              className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              disabled={loading}
+              className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {t('shops.form.save')}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (editShop ? t('shops.form.save') : t('shops.form.addSubmit'))}
             </button>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRecipeStore } from '../stores/recipeStore';
-import { X, Upload, Plus } from 'lucide-react';
+import { X, Upload, Plus, Loader2 } from 'lucide-react';
 import { Recipe } from '../types';
 import { useTranslation } from 'react-i18next';
 
@@ -30,7 +30,7 @@ interface AddRecipeModalProps {
 
 const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRecipe }) => {
   const { t } = useTranslation();
-  const { addRecipe, updateRecipe } = useRecipeStore();
+  const { addRecipe, updateRecipe, loading } = useRecipeStore();
   const [detailImages, setDetailImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -119,7 +119,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
     }
   };
 
-  const onSubmit = (data: RecipeFormValues) => {
+  const onSubmit = async (data: RecipeFormValues) => {
     const recipeData: Recipe = {
       ...data,
       name: data.name,
@@ -136,15 +136,20 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
       images: detailImages,
     };
 
-    if (editRecipe) {
-      updateRecipe(editRecipe.id, recipeData);
-    } else {
-      addRecipe(recipeData);
+    try {
+      if (editRecipe) {
+        await updateRecipe(editRecipe.id, recipeData);
+      } else {
+        await addRecipe(recipeData);
+      }
+      
+      reset();
+      setDetailImages([]);
+      onClose();
+    } catch (error) {
+      console.error('Submit error:', error);
+      // Optional: show toast error
     }
-    
-    reset();
-    setDetailImages([]);
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -306,9 +311,10 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
             <button
               type="submit"
               form="recipe-form"
-              className="flex-1 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+              disabled={loading}
+              className="flex-1 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {editRecipe ? t('recipes.form.save') : t('recipes.form.addSubmit')}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (editRecipe ? t('recipes.form.save') : t('recipes.form.addSubmit'))}
             </button>
         </div>
       </div>

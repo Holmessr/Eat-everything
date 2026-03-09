@@ -1,8 +1,8 @@
-import { Router, Request, Response } from 'express';
+import { Router, type Request, type Response } from 'express';
 
 const router = Router();
 
-router.post('/recommend', async (req: Request, res: Response) => {
+router.post('/recommend', async (req: Request, res: Response): Promise<any> => {
   try {
     const { userPreferences, context } = req.body as {
       userPreferences?: Record<string, unknown>;
@@ -38,7 +38,7 @@ router.post('/recommend', async (req: Request, res: Response) => {
         ],
       }),
     });
-    const data = await response.json();
+    const data: any = await response.json();
     if (!response.ok) {
       return res.status(response.status).json({ success: false, error: data });
     }
@@ -47,15 +47,16 @@ router.post('/recommend', async (req: Request, res: Response) => {
       data?.data?.choices?.[0]?.message?.content ??
       '';
     return res.json({ success: true, content, raw: data });
-  } catch {
-    return res.status(500).json({ success: false, error: 'AI Service Error' });
+  } catch (error) {
+    console.error('DeepSeek API Error:', error);
+    return res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown AI Service Error' });
   }
 });
 
 // OCR Mock
-router.post('/ocr', async (req: Request, res: Response) => {
+router.post('/ocr', async (req: Request, res: Response): Promise<any> => {
   try {
-    const { imageUrl } = req.body;
+    const { imageUrl } = req.body as { imageUrl: string };
     void imageUrl;
 
     // TODO: Integrate with Tesseract.js or other OCR service

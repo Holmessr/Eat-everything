@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Recipe } from '../types';
-import { Star, Clock, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
+import { Star, Clock, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface RecipeCardProps {
   recipe: Recipe;
   onEdit?: (recipe: Recipe) => void;
-  onDelete?: (recipe: Recipe) => void;
+  onDelete?: (recipe: Recipe) => Promise<void>;
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => {
@@ -14,6 +14,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const allImages = [
     ...(recipe.imageUrl ? [recipe.imageUrl] : []),
@@ -146,14 +147,26 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
                             )}
                             {onDelete && (
                                 <button
-                                    onClick={(e) => {
+                                    disabled={isDeleting}
+                                    onClick={async (e) => {
                                         e.stopPropagation();
-                                        setShowMenu(false);
-                                        onDelete(recipe);
+                                        if (confirm(t('recipes.form.confirmDelete'))) {
+                                            try {
+                                                setIsDeleting(true);
+                                                await onDelete(recipe);
+                                            } catch (error) {
+                                                console.error(error);
+                                                setIsDeleting(false);
+                                            } finally {
+                                                setShowMenu(false);
+                                            }
+                                        } else {
+                                            setShowMenu(false);
+                                        }
                                     }}
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center disabled:opacity-50"
                                 >
-                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
                                     {t('recipes.card.menu.delete')}
                                 </button>
                             )}

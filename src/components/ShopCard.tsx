@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Shop } from '../types';
-import { Star, MapPin, Clock, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
+import { Star, MapPin, Clock, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface ShopCardProps {
   shop: Shop;
   onEdit?: (shop: Shop) => void;
-  onDelete?: (shop: Shop) => void;
+  onDelete?: (shop: Shop) => Promise<void>;
 }
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
@@ -14,6 +14,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const allImages = [
     ...(shop.imageUrl ? [shop.imageUrl] : []),
@@ -136,14 +137,26 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
                             )}
                             {onDelete && (
                                 <button
-                                    onClick={(e) => {
+                                    disabled={isDeleting}
+                                    onClick={async (e) => {
                                         e.stopPropagation();
-                                        setShowMenu(false);
-                                        onDelete(shop);
+                                        if (confirm(t('shops.form.confirmDelete'))) {
+                                            try {
+                                                setIsDeleting(true);
+                                                await onDelete(shop);
+                                            } catch (error) {
+                                                console.error(error);
+                                                setIsDeleting(false);
+                                            } finally {
+                                                setShowMenu(false);
+                                            }
+                                        } else {
+                                            setShowMenu(false);
+                                        }
                                     }}
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center disabled:opacity-50"
                                 >
-                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
                                     {t('shops.card.menu.delete')}
                                 </button>
                             )}
