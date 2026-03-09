@@ -17,7 +17,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const allImages = [
-    ...(shop.imageUrl ? [shop.imageUrl] : []),
+    ...(shop.image_url ? [shop.image_url] : []), // snake_case
     ...(shop.images || [])
   ];
 
@@ -51,9 +51,9 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
         className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100 group cursor-pointer relative"
       >
         <div className="relative h-48 bg-gray-200 overflow-hidden">
-          {shop.imageUrl ? (
+          {shop.image_url ? ( // snake_case
             <img
-              src={shop.imageUrl}
+              src={shop.image_url} // snake_case
               alt={shop.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -94,7 +94,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop, onEdit, onDelete }) => {
           <div className="flex items-center text-gray-500 text-xs space-x-4">
               <div className="flex items-center">
                   <Clock className="w-3 h-3 mr-1" />
-                  <span>{t('shops.card.visits', { count: shop.visitCount })}</span>
+                  <span>{t('shops.card.visits', { count: shop.visit_count })}</span> {/* snake_case */}
               </div>
               {shop.address && (
                    <div className="flex items-center truncate max-w-[150px]">

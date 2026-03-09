@@ -31,15 +31,8 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Map DB snake_case to frontend camelCase
-      const mappedRecipes = (data || []).map((r: any) => ({
-        ...r,
-        prepTime: r.prep_time,
-        cookTime: r.cook_time,
-        imageUrl: r.image_url,
-        sourceUrl: r.source_url,
-      }));
-      set({ recipes: mappedRecipes as Recipe[] });
+      if (error) throw error;
+      set({ recipes: (data as unknown as Recipe[]) || [] });
     } catch (err: any) {
       set({ error: err.message });
       console.error('Fetch recipes error:', err);
@@ -54,20 +47,9 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Map frontend camelCase to DB snake_case
       const dbRecipe = {
+        ...recipeData,
         user_id: user.id,
-        name: recipeData.name,
-        rating: recipeData.rating,
-        tags: recipeData.tags,
-        difficulty: recipeData.difficulty,
-        prep_time: recipeData.prepTime, // Map prepTime to prep_time
-        cook_time: recipeData.cookTime, // Map cookTime to cook_time
-        ingredients: recipeData.ingredients,
-        steps: recipeData.steps,
-        image_url: recipeData.imageUrl, // Map imageUrl to image_url
-        images: recipeData.images,
-        source_url: recipeData.sourceUrl, // Map sourceUrl to source_url
       };
 
       const { data, error } = await supabase
@@ -78,16 +60,7 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
 
       if (error) throw error;
 
-      // Map DB snake_case back to frontend camelCase for the new item
-      const newRecipe: Recipe = {
-        ...data,
-        prepTime: data.prep_time,
-        cookTime: data.cook_time,
-        imageUrl: data.image_url,
-        sourceUrl: data.source_url,
-      };
-
-      set((state) => ({ recipes: [newRecipe, ...state.recipes] }));
+      set((state) => ({ recipes: [data as unknown as Recipe, ...state.recipes] }));
     } catch (err: any) {
       console.error('Add recipe error:', err);
       set({ error: err.message });
@@ -115,28 +88,9 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
   updateRecipe: async (id, updates) => {
     set({ loading: true, error: null });
     try {
-      // Map frontend updates to DB snake_case
-      const dbUpdates: any = { ...updates };
-      if (updates.prepTime !== undefined) {
-        dbUpdates.prep_time = updates.prepTime;
-        delete dbUpdates.prepTime;
-      }
-      if (updates.cookTime !== undefined) {
-        dbUpdates.cook_time = updates.cookTime;
-        delete dbUpdates.cookTime;
-      }
-      if (updates.imageUrl !== undefined) {
-        dbUpdates.image_url = updates.imageUrl;
-        delete dbUpdates.imageUrl;
-      }
-      if (updates.sourceUrl !== undefined) {
-        dbUpdates.source_url = updates.sourceUrl;
-        delete dbUpdates.sourceUrl;
-      }
-
       const { error } = await supabase
         .from('recipes')
-        .update(dbUpdates)
+        .update(updates)
         .eq('id', id);
 
       if (error) throw error;

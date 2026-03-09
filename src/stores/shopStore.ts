@@ -31,13 +31,8 @@ export const useShopStore = create<ShopState>((set, get) => ({
         .select('*')
         .order('created_at', { ascending: false });
 
-      // Map DB snake_case to frontend camelCase
-      const mappedShops = (data || []).map((s: any) => ({
-        ...s,
-        imageUrl: s.image_url,
-        visitCount: s.visit_count,
-      }));
-      set({ shops: mappedShops as Shop[] });
+      if (error) throw error;
+      set({ shops: (data as unknown as Shop[]) || [] });
     } catch (err: any) {
       set({ error: err.message });
       console.error('Fetch shops error:', err);
@@ -52,18 +47,9 @@ export const useShopStore = create<ShopState>((set, get) => ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Map frontend camelCase to DB snake_case
       const dbShop = {
+        ...shopData,
         user_id: user.id,
-        name: shopData.name,
-        type: shopData.type,
-        rating: shopData.rating,
-        tags: shopData.tags,
-        image_url: shopData.imageUrl, // Map imageUrl to image_url
-        images: shopData.images,
-        visit_count: shopData.visitCount, // Map visitCount to visit_count
-        address: shopData.address,
-        description: shopData.description,
       };
 
       const { data, error } = await supabase
@@ -74,14 +60,7 @@ export const useShopStore = create<ShopState>((set, get) => ({
 
       if (error) throw error;
 
-      // Map DB snake_case back to frontend camelCase for the new item
-      const newShop: Shop = {
-        ...data,
-        imageUrl: data.image_url,
-        visitCount: data.visit_count,
-      };
-
-      set((state) => ({ shops: [newShop, ...state.shops] }));
+      set((state) => ({ shops: [data as unknown as Shop, ...state.shops] }));
     } catch (err: any) {
       console.error('Add shop error:', err);
       set({ error: err.message });
@@ -109,20 +88,9 @@ export const useShopStore = create<ShopState>((set, get) => ({
   updateShop: async (id, updates) => {
     set({ loading: true, error: null });
     try {
-      // Map frontend updates to DB snake_case
-      const dbUpdates: any = { ...updates };
-      if (updates.imageUrl !== undefined) {
-        dbUpdates.image_url = updates.imageUrl;
-        delete dbUpdates.imageUrl;
-      }
-      if (updates.visitCount !== undefined) {
-        dbUpdates.visit_count = updates.visitCount;
-        delete dbUpdates.visitCount;
-      }
-
       const { error } = await supabase
         .from('shops')
-        .update(dbUpdates)
+        .update(updates)
         .eq('id', id);
 
       if (error) throw error;

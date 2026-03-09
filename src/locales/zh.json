@@ -142,5 +142,21 @@
     "bioPlaceholder": "写一句话介绍自己...",
     "save": "保存修改",
     "success": "保存成功！"
+  },
+  "auth": {
+    "login": "登录",
+    "register": "注册",
+    "email": "邮箱",
+    "password": "密码",
+    "emailPlaceholder": "your@email.com",
+    "passwordPlaceholder": "••••••••",
+    "noAccount": "还没有账号？",
+    "hasAccount": "已有账号？",
+    "toRegister": "去注册",
+    "toLogin": "去登录",
+    "registerSuccess": "注册成功！请检查邮箱完成验证，或者直接登录（如果未开启邮箱验证）",
+    "errors": {
+      "missing": "缺少必要的环境配置"
+    }
   }
 }

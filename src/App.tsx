@@ -5,6 +5,7 @@ import Shops from './pages/Shops';
 import Recipes from './pages/Recipes';
 import Profile from './pages/Profile';
 import Auth from './pages/Auth';
+import AuthGuard from './components/AuthGuard';
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="shops" element={<Shops />} />
           <Route path="recipes" element={<Recipes />} />
-          <Route path="profile" element={<Profile />} />
+          <Route path="profile" element={<AuthGuard><Profile /></AuthGuard>} />
         </Route>
       </Routes>
     </BrowserRouter>

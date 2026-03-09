@@ -17,7 +17,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
   const [isDeleting, setIsDeleting] = useState(false);
 
   const allImages = [
-    ...(recipe.imageUrl ? [recipe.imageUrl] : []),
+    ...(recipe.image_url ? [recipe.image_url] : []), // snake_case
     ...(recipe.images || [])
   ];
 
@@ -63,9 +63,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
         className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100 group cursor-pointer relative"
       >
         <div className="relative h-48 bg-gray-200 overflow-hidden">
-          {recipe.imageUrl ? (
+          {recipe.image_url ? ( // snake_case
             <img
-              src={recipe.imageUrl}
+              src={recipe.image_url} // snake_case
               alt={recipe.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -106,7 +106,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
           <div className="flex items-center text-gray-500 text-xs space-x-4">
               <div className="flex items-center">
                   <Clock className="w-3 h-3 mr-1" />
-                  <span>{recipe.prepTime + recipe.cookTime} {t('recipes.card.mins')}</span>
+                  <span>{recipe.prep_time + recipe.cook_time} {t('recipes.card.mins')}</span> {/* snake_case */}
               </div>
               <div className="flex items-center">
                   <ChefHat className="w-3 h-3 mr-1" />

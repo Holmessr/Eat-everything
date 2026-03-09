@@ -12,7 +12,7 @@ const shopFormSchema = z.object({
   type: z.enum(['delivery', 'dine-in'] as const),
   rating: z.number().min(1).max(5),
   tags: z.string(),
-  imageUrl: z.string().optional().or(z.literal('')),
+  image_url: z.string().optional().or(z.literal('')), // snake_case
   address: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
 });
@@ -45,7 +45,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       type: 'dine-in',
       rating: 5,
       tags: '',
-      imageUrl: '',
+      image_url: '',
       address: '',
       description: '',
     },
@@ -58,7 +58,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       setValue('type', editShop.type);
       setValue('rating', editShop.rating);
       setValue('tags', editShop.tags.join(', '));
-      setValue('imageUrl', editShop.imageUrl || '');
+      setValue('image_url', editShop.image_url || '');
       setValue('address', editShop.address || '');
       setValue('description', editShop.description || '');
       setDetailImages(editShop.images || []);
@@ -68,7 +68,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
         type: 'dine-in',
         rating: 5,
         tags: '',
-        imageUrl: '',
+        image_url: '',
         address: '',
         description: '',
       });
@@ -102,7 +102,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
           const reader = new FileReader();
           reader.onloadend = () => {
               if (typeof reader.result === 'string') {
-                  setValue('imageUrl', reader.result);
+                  setValue('image_url', reader.result);
               }
           };
           reader.readAsDataURL(file);
@@ -111,16 +111,15 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
 
 
   const onSubmit = async (data: ShopFormValues) => {
-    const shopData: Shop = {
-      ...data,
+    // Remove id generation, let Supabase handle it or use a proper UUID generator if needed for optimistic UI
+    // Here we rely on the backend to generate the ID or use undefined for new items
+    const shopData: Omit<Shop, 'id' | 'user_id' | 'visit_count'> = {
       name: data.name,
       type: data.type,
       rating: data.rating,
-      imageUrl: data.imageUrl,
+      image_url: data.image_url,
       address: data.address,
       description: data.description,
-      id: editShop ? editShop.id : Date.now().toString(),
-      visitCount: editShop ? editShop.visitCount : 0,
       tags: data.tags.split(/[,，]/).map((t) => t.trim()).filter((t) => t.length > 0),
       images: detailImages,
     };
@@ -129,6 +128,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       if (editShop) {
         await updateShop(editShop.id, shopData);
       } else {
+        // @ts-ignore - The store handles the rest
         await addShop(shopData);
       }
       
@@ -145,7 +145,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col max-h-[calc(100vh-2rem)] md:max-h-[85vh]">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col max-h-[70vh]">
         <div className="flex justify-between items-center p-4 border-b border-gray-100 flex-shrink-0">
           <h2 className="text-lg font-bold text-gray-900">{editShop ? t('shops.edit') : t('shops.add')}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -161,7 +161,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
                 <div className="space-y-2">
                     <div className="flex gap-2">
                         <input
-                            {...register('imageUrl')}
+                            {...register('image_url')}
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder={t('shops.form.coverPlaceholder')}
                         />
@@ -170,9 +170,9 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
                             <input type="file" accept="image/*" className="hidden" onChange={handleCoverImageUpload} />
                         </label>
                     </div>
-                    {watch('imageUrl') && (
+                    {watch('image_url') && (
                         <div className="relative h-32 w-full rounded-lg overflow-hidden bg-gray-100">
-                            <img src={watch('imageUrl')} alt="Preview" className="w-full h-full object-cover" />
+                            <img src={watch('image_url') || ''} alt="Preview" className="w-full h-full object-cover" />
                         </div>
                     )}
                 </div>

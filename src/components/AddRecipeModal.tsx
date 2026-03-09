@@ -12,12 +12,12 @@ const recipeFormSchema = z.object({
   rating: z.number().min(1).max(5),
   tags: z.string(),
   difficulty: z.enum(['easy', 'medium', 'hard'] as const),
-  prepTime: z.number().min(0),
-  cookTime: z.number().min(0),
+  prep_time: z.number().min(0), // snake_case
+  cook_time: z.number().min(0), // snake_case
   ingredients: z.string(),
   steps: z.string(),
-  imageUrl: z.string().optional().or(z.literal('')),
-  sourceUrl: z.string().optional().or(z.literal('')),
+  image_url: z.string().optional().or(z.literal('')), // snake_case
+  source_url: z.string().optional().or(z.literal('')), // snake_case
 });
 
 type RecipeFormValues = z.infer<typeof recipeFormSchema>;
@@ -48,12 +48,12 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
       rating: 5,
       tags: '',
       difficulty: 'easy',
-      prepTime: 10,
-      cookTime: 10,
+      prep_time: 10,
+      cook_time: 10,
       ingredients: '',
       steps: '',
-      imageUrl: '',
-      sourceUrl: '',
+      image_url: '',
+      source_url: '',
     },
   });
 
@@ -63,12 +63,12 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
       setValue('rating', editRecipe.rating);
       setValue('tags', editRecipe.tags.join(', '));
       setValue('difficulty', editRecipe.difficulty);
-      setValue('prepTime', editRecipe.prepTime);
-      setValue('cookTime', editRecipe.cookTime);
+      setValue('prep_time', editRecipe.prep_time);
+      setValue('cook_time', editRecipe.cook_time);
       setValue('ingredients', editRecipe.ingredients.join('\n'));
       setValue('steps', editRecipe.steps.join('\n'));
-      setValue('imageUrl', editRecipe.imageUrl || '');
-      setValue('sourceUrl', editRecipe.sourceUrl || '');
+      setValue('image_url', editRecipe.image_url || '');
+      setValue('source_url', editRecipe.source_url || '');
       setDetailImages(editRecipe.images || []);
     } else {
       reset({
@@ -76,12 +76,12 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
         rating: 5,
         tags: '',
         difficulty: 'easy',
-        prepTime: 10,
-        cookTime: 10,
+        prep_time: 10,
+        cook_time: 10,
         ingredients: '',
         steps: '',
-        imageUrl: '',
-        sourceUrl: '',
+        image_url: '',
+        source_url: '',
       });
       setDetailImages([]);
     }
@@ -112,7 +112,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
-          setValue('imageUrl', reader.result);
+          setValue('image_url', reader.result);
         }
       };
       reader.readAsDataURL(file);
@@ -120,16 +120,15 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
   };
 
   const onSubmit = async (data: RecipeFormValues) => {
-    const recipeData: Recipe = {
-      ...data,
+    // Remove id generation, let Supabase handle it
+    const recipeData: Omit<Recipe, 'id' | 'user_id'> = {
       name: data.name,
       rating: data.rating,
       difficulty: data.difficulty,
-      prepTime: data.prepTime,
-      cookTime: data.cookTime,
-      imageUrl: data.imageUrl,
-      sourceUrl: data.sourceUrl,
-      id: editRecipe ? editRecipe.id : Date.now().toString(),
+      prep_time: data.prep_time,
+      cook_time: data.cook_time,
+      image_url: data.image_url,
+      source_url: data.source_url,
       tags: data.tags.split(/[,，]/).map((t) => t.trim()).filter((t) => t.length > 0),
       ingredients: data.ingredients.split('\n').map((i) => i.trim()).filter((i) => i.length > 0),
       steps: data.steps.split('\n').map((s) => s.trim()).filter((s) => s.length > 0),
@@ -140,6 +139,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
       if (editRecipe) {
         await updateRecipe(editRecipe.id, recipeData);
       } else {
+        // @ts-ignore - The store handles the rest
         await addRecipe(recipeData);
       }
       
@@ -156,7 +156,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col max-h-[calc(100vh-2rem)] md:max-h-[85vh]">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg flex flex-col max-h-[70vh]">
         <div className="flex justify-between items-center p-4 border-b border-gray-100 flex-shrink-0">
           <h2 className="text-lg font-bold text-gray-900">{editRecipe ? t('recipes.edit') : t('recipes.add')}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -172,7 +172,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
               <div className="space-y-2">
                   <div className="flex gap-2">
                        <input
-                          {...register('imageUrl')}
+                          {...register('image_url')}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder={t('recipes.form.coverPlaceholder')}
                       />
@@ -181,9 +181,9 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
                           <input type="file" accept="image/*" className="hidden" onChange={handleCoverImageUpload} />
                       </label>
                   </div>
-                  {watch('imageUrl') && (
+                  {watch('image_url') && (
                       <div className="relative h-32 w-full rounded-lg overflow-hidden bg-gray-100">
-                          <img src={watch('imageUrl')} alt="Preview" className="w-full h-full object-cover" />
+                          <img src={watch('image_url') || ''} alt="Preview" className="w-full h-full object-cover" />
                       </div>
                   )}
               </div>
@@ -230,7 +230,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
               <input
                 type="number"
                 min="0"
-                {...register('prepTime', { valueAsNumber: true })}
+                {...register('prep_time', { valueAsNumber: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
@@ -239,7 +239,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
               <input
                 type="number"
                 min="0"
-                {...register('cookTime', { valueAsNumber: true })}
+                {...register('cook_time', { valueAsNumber: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>

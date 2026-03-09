@@ -1,8 +1,9 @@
-import { Router, type Request, type Response } from 'express';
+import { Router } from 'express';
+import type { Request, Response } from 'express';
 
 const router = Router();
 
-router.post('/recommend', async (req: Request, res: Response): Promise<any> => {
+router.post('/recommend', async (req: Request, res: Response): Promise<void> => {
   try {
     const { userPreferences, context } = req.body as {
       userPreferences?: Record<string, unknown>;
@@ -14,7 +15,8 @@ router.post('/recommend', async (req: Request, res: Response): Promise<any> => {
     };
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ success: false, error: 'Missing DeepSeek API key' });
+      res.status(500).json({ success: false, error: 'Missing DeepSeek API key' });
+      return;
     }
     const systemContent =
       '你是专业的营养规划师和资深大厨。请优先基于用户已导入的店铺和菜谱数据进行健康饮食推荐，并结合用户偏好与消费频率给出可执行建议。';
@@ -40,21 +42,22 @@ router.post('/recommend', async (req: Request, res: Response): Promise<any> => {
     });
     const data: any = await response.json();
     if (!response.ok) {
-      return res.status(response.status).json({ success: false, error: data });
+      res.status(response.status).json({ success: false, error: data });
+      return;
     }
     const content =
       data?.choices?.[0]?.message?.content ??
       data?.data?.choices?.[0]?.message?.content ??
       '';
-    return res.json({ success: true, content, raw: data });
+    res.json({ success: true, content, raw: data });
   } catch (error) {
     console.error('DeepSeek API Error:', error);
-    return res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown AI Service Error' });
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown AI Service Error' });
   }
 });
 
 // OCR Mock
-router.post('/ocr', async (req: Request, res: Response): Promise<any> => {
+router.post('/ocr', async (req: Request, res: Response): Promise<void> => {
   try {
     const { imageUrl } = req.body as { imageUrl: string };
     void imageUrl;

@@ -5,9 +5,12 @@ import AddRecipeModal from '../components/AddRecipeModal';
 import { Plus, Search, Filter, Loader2 } from 'lucide-react';
 import { Recipe } from '../types';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 const Recipes: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { recipes, removeRecipe, fetchRecipes, loading } = useRecipeStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,6 +19,17 @@ const Recipes: React.FC = () => {
   useEffect(() => {
     fetchRecipes();
   }, [fetchRecipes]);
+
+  const handleAddClick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      if (confirm('请先登录后再添加菜谱。是否去登录？')) {
+        navigate('/auth');
+      }
+    } else {
+      setIsModalOpen(true);
+    }
+  };
 
   const filteredRecipes = recipes.filter((recipe) => {
     return recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -48,7 +62,7 @@ const Recipes: React.FC = () => {
           <p className="text-sm text-gray-500 mt-1">{t('recipes.subtitle', { count: recipes.length })}</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleAddClick}
           className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4 mr-2" />

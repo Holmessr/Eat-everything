@@ -6,14 +6,14 @@ export interface Shop {
   type: ShopType;
   rating: number; // 1-5
   tags: string[];
-  imageUrl?: string;
+  image_url?: string; // snake_case
   images?: string[]; // Multiple images support
-  visitCount: number;
-  lastVisited?: string; // ISO date string
+  visit_count: number; // snake_case
+  last_visited?: string; // ISO date string, snake_case
   description?: string;
   address?: string;
   platform?: 'meituan' | 'eleme' | 'taobao' | 'other';
-  platformLink?: string;
+  platform_link?: string; // snake_case
 }
 
 export type RecipeDifficulty = 'easy' | 'medium' | 'hard';
@@ -23,20 +23,20 @@ export interface Recipe {
   name: string;
   rating: number;
   tags: string[];
-  imageUrl?: string;
+  image_url?: string; // snake_case
   images?: string[]; // Multiple images support
   difficulty: RecipeDifficulty;
-  prepTime: number; // in minutes
-  cookTime: number; // in minutes
+  prep_time: number; // in minutes, snake_case
+  cook_time: number; // in minutes, snake_case
   ingredients: string[];
   steps: string[];
-  sourceUrl?: string; // e.g., Xiaohongshu link
+  source_url?: string; // e.g., Xiaohongshu link, snake_case
 }
 
 export interface UserProfile {
   id: string;
   name: string;
-  avatarUrl?: string;
+  avatar_url?: string; // snake_case
   bio?: string;
   preferences?: {
     spicy: number; // 0-5

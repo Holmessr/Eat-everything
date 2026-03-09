@@ -6,9 +6,12 @@ import { ShopType, Shop } from '../types';
 import { Plus, Search, Filter, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 const Shops: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { shops, removeShop, fetchShops, loading } = useShopStore();
   const [filterType, setFilterType] = useState<ShopType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +21,17 @@ const Shops: React.FC = () => {
   useEffect(() => {
     fetchShops();
   }, [fetchShops]);
+
+  const handleAddClick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      if (confirm('请先登录后再添加店铺。是否去登录？')) {
+        navigate('/auth');
+      }
+    } else {
+      setIsModalOpen(true);
+    }
+  };
 
   const filteredShops = shops.filter((shop) => {
     const matchesType = filterType === 'all' || shop.type === filterType;
@@ -51,7 +65,7 @@ const Shops: React.FC = () => {
           <p className="text-sm text-gray-500 mt-1">{t('shops.subtitle', { count: shops.length })}</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleAddClick}
           className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4 mr-2" />
