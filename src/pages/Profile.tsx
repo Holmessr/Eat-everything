@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase';
 import { Camera, Save, LogOut, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { compressImage } from '../utils/imageCompression';
 
 interface UserProfile {
   id: string;
@@ -67,12 +69,21 @@ const Profile: React.FC = () => {
       const file = e.target.files?.[0];
       if (!file || !profile) return;
 
-      const fileExt = file.name.split('.').pop();
+      // Compress avatar before uploading
+      // Use lower quality for avatar to keep it small (e.g. 200px is enough for avatar)
+      const compressedDataUrl = await compressImage(file, 200, 0.6);
+      
+      // Convert Data URL back to Blob for upload
+      const res = await fetch(compressedDataUrl);
+      const blob = await res.blob();
+      const compressedFile = new File([blob], file.name, { type: 'image/webp' });
+
+      const fileExt = 'webp'; // Force webp extension
       const filePath = `${profile.id}/${Math.random()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(filePath, compressedFile);
 
       if (uploadError) throw uploadError;
 
@@ -83,7 +94,7 @@ const Profile: React.FC = () => {
       await updateProfile({ avatar_url: publicUrl });
       setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
     } catch (error) {
-      alert('Error uploading avatar!');
+      toast.error('Error uploading avatar!');
       console.error(error);
     } finally {
       setUploading(false);
@@ -105,7 +116,7 @@ const Profile: React.FC = () => {
       if (error) throw error;
     } catch (error) {
       console.error('Error updating profile!', error);
-      alert('Error updating profile!');
+      toast.error('Error updating profile!');
     }
   };
 
@@ -121,7 +132,7 @@ const Profile: React.FC = () => {
     await updateProfile(updates);
     setProfile(prev => prev ? { ...prev, ...updates } : null);
     setLoading(false);
-    alert(t('profile.success'));
+    toast.success(t('profile.success'));
   };
 
   const handleSignOut = async () => {

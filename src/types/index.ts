@@ -10,7 +10,7 @@ export interface Shop {
   images?: string[]; // Multiple images support
   visit_count: number; // snake_case
   last_visited?: string; // ISO date string, snake_case
-  description?: string;
+  // description?: string; // Deprecated
   address?: string;
   platform?: 'meituan' | 'eleme' | 'taobao' | 'other';
   platform_link?: string; // snake_case
@@ -26,8 +26,8 @@ export interface Recipe {
   image_url?: string; // snake_case
   images?: string[]; // Multiple images support
   difficulty: RecipeDifficulty;
-  prep_time: number; // in minutes, snake_case
-  cook_time: number; // in minutes, snake_case
+  // prep_time: number; // in minutes, snake_case, Deprecated
+  // cook_time: number; // in minutes, snake_case, Deprecated
   ingredients: string[];
   steps: string[];
   source_url?: string; // e.g., Xiaohongshu link, snake_case

@@ -1,14 +1,14 @@
 /**
  * Compresses an image file to a lower quality and size using Canvas API.
  * @param file The original image file.
- * @param maxWidth The maximum width of the output image. Defaults to 800px.
- * @param quality The quality of the output image (0 to 1). Defaults to 0.7.
+ * @param maxWidth The maximum width of the output image. Defaults to 600px.
+ * @param quality The quality of the output image (0 to 1). Defaults to 0.5.
  * @returns A promise that resolves to the compressed image as a Data URL string.
  */
 export const compressImage = (
   file: File,
-  maxWidth: number = 800,
-  quality: number = 0.7
+  maxWidth: number = 600,
+  quality: number = 0.5
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -38,9 +38,8 @@ export const compressImage = (
 
         ctx.drawImage(img, 0, 0, width, height);
         
-        // Compress to JPEG with specified quality
-        // Note: 'image/jpeg' usually provides better compression than 'image/png' for photos
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        // Compress to WebP with specified quality for better compression
+        const compressedDataUrl = canvas.toDataURL('image/webp', quality);
         resolve(compressedDataUrl);
       };
       img.onerror = (error) => reject(error);

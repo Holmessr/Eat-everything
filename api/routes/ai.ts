@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
+import { getRecommendation } from '../services/ai.js';
+import { processImage } from '../services/ocr.js';
 
 const router = Router();
 
@@ -13,62 +15,31 @@ router.post('/recommend', async (req: Request, res: Response): Promise<void> => 
         recipes?: Array<Record<string, unknown>>;
       };
     };
+
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
       res.status(500).json({ success: false, error: 'Missing DeepSeek API key' });
       return;
     }
-    const systemContent =
-      '你是专业的营养规划师和资深大厨。请优先基于用户已导入的店铺和菜谱数据进行健康饮食推荐，并结合用户偏好与消费频率给出可执行建议。';
-    
-    // Optimize data size by removing images and unnecessary fields
-    const optimizedShops = (context?.shops ?? []).map((s: any) => ({
-      name: s.name,
-      type: s.type,
-      rating: s.rating,
-      tags: s.tags,
-      visit_count: s.visit_count,
-    }));
 
-    const optimizedRecipes = (context?.recipes ?? []).map((r: any) => ({
-      name: r.name,
-      rating: r.rating,
-      tags: r.tags,
-      difficulty: r.difficulty,
-      prep_time: r.prep_time,
-      cook_time: r.cook_time,
-      ingredients: r.ingredients,
-    }));
+    const result = await getRecommendation(
+      userPreferences || {},
+      context || {},
+      apiKey
+    );
 
-    const userContent =
-      `用户问题: ${context?.userMessage ?? ''}\n店铺数据: ${JSON.stringify(optimizedShops)}\n菜谱数据: ${JSON.stringify(optimizedRecipes)}\n偏好: ${JSON.stringify(userPreferences ?? {})}`;
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: systemContent },
-          { role: 'user', content: userContent },
-        ],
-      }),
-    });
-    const data: any = await response.json();
-    if (!response.ok) {
-      res.status(response.status).json({ success: false, error: data });
+    if (!result.success) {
+      res.status(500).json({ success: false, error: result.error });
       return;
     }
-    const content =
-      data?.choices?.[0]?.message?.content ??
-      data?.data?.choices?.[0]?.message?.content ??
-      '';
-    res.json({ success: true, content, raw: data });
+
+    res.json(result);
   } catch (error) {
     console.error('DeepSeek API Error:', error);
-    res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown AI Service Error' });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown AI Service Error',
+    });
   }
 });
 
@@ -76,21 +47,14 @@ router.post('/recommend', async (req: Request, res: Response): Promise<void> => 
 router.post('/ocr', async (req: Request, res: Response): Promise<void> => {
   try {
     const { imageUrl } = req.body as { imageUrl: string };
-    void imageUrl;
+    const result = await processImage(imageUrl);
 
-    // TODO: Integrate with Tesseract.js or other OCR service
-    // const worker = await createWorker();
-    // const { data: { text } } = await worker.recognize(imageUrl);
-    // await worker.terminate();
+    if (!result.success) {
+      res.status(500).json({ success: false, error: result.error });
+      return;
+    }
 
-    // Mock Response
-    setTimeout(() => {
-      res.json({
-        success: true,
-        text: "Detected Shop Name: Tasty Burger\nRating: 4.5\nAddress: 123 Main St"
-      });
-    }, 1000);
-
+    res.json(result);
   } catch {
     res.status(500).json({ success: false, error: 'OCR Service Error' });
   }

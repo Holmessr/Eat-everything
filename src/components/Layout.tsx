@@ -15,13 +15,13 @@ const Layout: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 md:flex-row">
+    <div className="flex flex-col min-h-screen bg-gray-50 md:flex-row">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200">
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 fixed inset-y-0 left-0 z-10">
         <div className="p-4 border-b border-gray-200">
           <h1 className="text-xl font-bold text-primary">{t('app.title')}</h1>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -43,7 +43,7 @@ const Layout: React.FC = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+      <main className="flex-1 md:pl-64 pb-20 md:pb-0">
         <div className="max-w-4xl mx-auto">
           <Outlet />
         </div>

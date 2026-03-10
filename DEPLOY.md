@@ -35,4 +35,9 @@ ALTER TABLE public.shops ADD COLUMN IF NOT EXISTS platform_link text;
 
 -- 为 recipes 表添加 source_url 字段（如果之前已存在可忽略）
 ALTER TABLE public.recipes ADD COLUMN IF NOT EXISTS source_url text;
+
+-- [2025-03-10] 移除不再使用的字段
+ALTER TABLE public.shops DROP COLUMN IF EXISTS description;
+ALTER TABLE public.recipes DROP COLUMN IF EXISTS prep_time;
+ALTER TABLE public.recipes DROP COLUMN IF EXISTS cook_time;
 ```

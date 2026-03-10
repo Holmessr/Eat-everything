@@ -8,6 +8,7 @@ import MarkdownRenderer from '../components/MarkdownRenderer';
 import { Shop, Recipe } from '../types';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 
 interface Message {
   id: string;
@@ -70,9 +71,12 @@ const Home: React.FC = () => {
         const randomItem = candidates[Math.floor(Math.random() * candidates.length)];
         setRecommendation(randomItem);
       } else {
-        // Fallback or empty state handling could go here
-        // For now, if no items match, we might want to show a toast or alert
-        alert(`没有找到${selectedType === 'recipe' ? t('home.select.recipe') : selectedType === 'delivery' ? t('home.select.delivery') : t('home.select.dineIn')}，请先添加一些数据！`);
+        const msg = selectedType === 'recipe' 
+          ? t('home.select.recipe') 
+          : selectedType === 'delivery' 
+            ? t('home.select.delivery') 
+            : t('home.select.dineIn');
+        toast.error(`没有找到${msg}，请先添加一些数据！`);
       }
       setIsAnimating(false);
     }, 800);
@@ -189,7 +193,7 @@ const Home: React.FC = () => {
               </span>
             </div>
             
-            <div className="transform transition-all hover:scale-[1.02] text-left">
+            <div className="transform transition-all hover:scale-[1.02] text-left cursor-pointer">
               {recommendation.type === 'shop' ? (
                 <ShopCard shop={recommendation.data as Shop} />
               ) : (
@@ -197,15 +201,12 @@ const Home: React.FC = () => {
               )}
             </div>
             
-            <div className="flex justify-center mt-6 gap-4">
+            <div className="flex justify-center mt-6">
               <button 
                 onClick={handleRecommend}
                 className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
                 {t('home.button.change')}
-              </button>
-              <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                {t('home.button.choose')}
               </button>
             </div>
           </div>

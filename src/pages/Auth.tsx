@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, Lock, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Auth: React.FC = () => {
   const { t } = useTranslation();
@@ -11,12 +12,10 @@ const Auth: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     try {
       if (isLogin) {
@@ -25,6 +24,7 @@ const Auth: React.FC = () => {
           password,
         });
         if (error) throw error;
+        toast.success(t('auth.loginSuccess') || '登录成功');
         navigate('/profile');
       } else {
         const { error } = await supabase.auth.signUp({
@@ -32,11 +32,11 @@ const Auth: React.FC = () => {
           password,
         });
         if (error) throw error;
-        alert(t('auth.registerSuccess'));
+        toast.success(t('auth.registerSuccess'));
         setIsLogin(true);
       }
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -48,12 +48,6 @@ const Auth: React.FC = () => {
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-900">
           {isLogin ? t('auth.login') : t('auth.register')}
         </h1>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleAuth} className="space-y-4">
           <div>

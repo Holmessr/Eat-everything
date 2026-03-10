@@ -13,7 +13,6 @@ create table public.shops (
   images text[] default '{}',
   visit_count integer default 0,
   address text,
-  description text,
   platform_link text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -26,8 +25,6 @@ create table public.recipes (
   rating numeric check (rating >= 1 and rating <= 5) not null,
   tags text[] default '{}',
   difficulty text check (difficulty in ('easy', 'medium', 'hard')) not null,
-  prep_time integer default 0,
-  cook_time integer default 0,
   ingredients text[] default '{}',
   steps text[] default '{}',
   image_url text,

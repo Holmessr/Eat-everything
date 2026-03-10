@@ -53,7 +53,7 @@
     },
     "form": {
       "cover": "封面图片",
-      "coverPlaceholder": "输入图片链接或上传本地图片",
+      "coverPlaceholder": "上传本地图片",
       "name": "店铺名称",
       "namePlaceholder": "例如：麦当劳",
       "type": "类型",
@@ -101,7 +101,7 @@
     },
     "form": {
       "cover": "封面图片",
-      "coverPlaceholder": "输入图片链接或上传本地图片",
+      "coverPlaceholder": "上传本地图片",
       "name": "菜谱名称",
       "namePlaceholder": "例如：番茄炒蛋",
       "difficulty": "难度",
@@ -162,6 +162,7 @@
     "hasAccount": "已有账号？",
     "toRegister": "去注册",
     "toLogin": "去登录",
+    "loginSuccess": "登录成功！",
     "registerSuccess": "注册成功！请检查邮箱完成验证，或者直接登录（如果未开启邮箱验证）",
     "errors": {
       "missing": "缺少必要的环境配置"

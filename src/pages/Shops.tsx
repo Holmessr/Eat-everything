@@ -8,6 +8,7 @@ import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Shops: React.FC = () => {
   const { t } = useTranslation();
@@ -25,9 +26,28 @@ const Shops: React.FC = () => {
   const handleAddClick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      if (confirm('请先登录后再添加店铺。是否去登录？')) {
-        navigate('/auth');
-      }
+      toast((t) => (
+        <div className="flex flex-col gap-2">
+          <span>请先登录后再添加店铺</span>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
+            >
+              取消
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                navigate('/auth');
+              }}
+              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              去登录
+            </button>
+          </div>
+        </div>
+      ), { duration: 5000 });
     } else {
       setIsModalOpen(true);
     }

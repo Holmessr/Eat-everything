@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Recipe } from '../types';
-import { Star, Clock, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2, ExternalLink } from 'lucide-react';
+import { Star, Clock, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import ConfirmModal from './ConfirmModal';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -15,6 +16,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const allImages = [
     ...(recipe.image_url ? [recipe.image_url] : []), // snake_case
@@ -60,6 +62,20 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
   const toggleMenu = (e: React.MouseEvent) => {
       e.stopPropagation();
       setShowMenu(!showMenu);
+  };
+
+  const handleDelete = async () => {
+    if (!onDelete) return;
+    try {
+      setIsDeleting(true);
+      await onDelete(recipe);
+    } catch (error) {
+      console.error(error);
+      setIsDeleting(false);
+    } finally {
+      setShowConfirmDelete(false);
+      setShowMenu(false);
+    }
   };
 
   return (
@@ -115,10 +131,6 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
 
           <div className="flex items-center text-gray-500 text-xs space-x-4">
               <div className="flex items-center">
-                  <Clock className="w-3 h-3 mr-1" />
-                  <span>{recipe.prep_time + recipe.cook_time} {t('recipes.card.mins')}</span> {/* snake_case */}
-              </div>
-              <div className="flex items-center">
                   <ChefHat className="w-3 h-3 mr-1" />
                   <span>{t('recipes.card.ingredientsCount', { count: recipe.ingredients.length })}</span>
               </div>
@@ -158,21 +170,10 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
                             {onDelete && (
                                 <button
                                     disabled={isDeleting}
-                                    onClick={async (e) => {
+                                    onClick={(e) => {
                                         e.stopPropagation();
-                                        if (confirm(t('recipes.form.confirmDelete'))) {
-                                            try {
-                                                setIsDeleting(true);
-                                                await onDelete(recipe);
-                                            } catch (error) {
-                                                console.error(error);
-                                                setIsDeleting(false);
-                                            } finally {
-                                                setShowMenu(false);
-                                            }
-                                        } else {
-                                            setShowMenu(false);
-                                        }
+                                        setShowConfirmDelete(true);
+                                        setShowMenu(false);
                                     }}
                                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center disabled:opacity-50"
                                 >
@@ -186,6 +187,16 @@ const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onEdit, onDelete }) => 
             </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleDelete}
+        title={t('recipes.form.confirmDelete')}
+        message="确认要删除这个菜谱吗？此操作无法撤销。"
+        confirmText={t('recipes.card.menu.delete')}
+        loading={isDeleting}
+      />
 
        {/* Image Gallery Modal */}
        {isModalOpen && allImages.length > 0 && (
