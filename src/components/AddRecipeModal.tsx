@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -7,7 +7,10 @@ import { X, Upload, Plus, Loader2 } from 'lucide-react';
 import { Recipe } from '../types';
 import { useTranslation } from 'react-i18next';
 import { useImageUpload } from '../hooks/useImageUpload';
+import toast from 'react-hot-toast';
 import Modal from './Modal';
+import { extractRecipeFields, requestOcr } from '../lib/ocr';
+import { compressImageForOcr } from '../utils/imageCompression';
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, 'required'),
@@ -32,6 +35,8 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
   const { t } = useTranslation();
   const { addRecipe, updateRecipe, loading } = useRecipeStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [ocrImage, setOcrImage] = useState<string | null>(null);
+  const [isRecognizing, setIsRecognizing] = useState(false);
 
   const {
     images: detailImages,
@@ -50,7 +55,6 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
     watch,
     formState: { errors },
   } = useForm<RecipeFormValues>({
-    // @ts-ignore
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
       rating: 5,
@@ -74,6 +78,7 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
       setValue('image_url', editRecipe.image_url || '');
       setValue('source_url', editRecipe.source_url || '');
       setDetailImages(editRecipe.images || []);
+      setOcrImage(null);
     } else {
       reset({
         name: '',
@@ -86,11 +91,46 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
         source_url: '',
       });
       setDetailImages([]);
+      setOcrImage(null);
     }
   }, [editRecipe, setValue, reset, isOpen, setDetailImages]);
 
-  const onCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleCoverImageUpload(e, (url) => setValue('image_url', url));
+  const onCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    await handleCoverImageUpload(e, (url) => setValue('image_url', url));
+    if (!file) {
+      return;
+    }
+    try {
+      const nextOcrImage = await compressImageForOcr(file);
+      setOcrImage(nextOcrImage);
+    } catch {
+      setOcrImage(null);
+    }
+  };
+
+  const onRecognizeClick = async () => {
+    if (!ocrImage || isRecognizing) return;
+    setIsRecognizing(true);
+    const toastId = toast.loading('识别中...');
+    try {
+      const res = await requestOcr(ocrImage);
+      if (!res.success || !res.text) {
+        toast.dismiss(toastId);
+        return;
+      }
+
+      const fields = extractRecipeFields(res.text);
+      const currentName = watch('name');
+
+      if (!currentName && fields.name) setValue('name', fields.name);
+
+      toast.dismiss(toastId);
+    } catch {
+      toast.dismiss(toastId);
+    } finally {
+      setIsRecognizing(false);
+    }
   };
 
   const onSubmit = async (data: RecipeFormValues) => {
@@ -110,7 +150,6 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
       if (editRecipe) {
         await updateRecipe(editRecipe.id, recipeData);
       } else {
-        // @ts-ignore
         await addRecipe(recipeData);
       }
       
@@ -143,7 +182,17 @@ const AddRecipeModal: React.FC<AddRecipeModalProps> = ({ isOpen, onClose, editRe
       <form id="recipe-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Cover Image - Upload Only */}
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('recipes.form.cover')}</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">{t('recipes.form.cover')}</label>
+              <button
+                type="button"
+                onClick={onRecognizeClick}
+                disabled={!ocrImage || isRecognizing}
+                className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRecognizing ? '识别中...' : '识别'}
+              </button>
+            </div>
             <div className="space-y-2">
                 {watch('image_url') ? (
                     <div className="relative h-32 w-full rounded-lg overflow-hidden bg-gray-100 group">

@@ -12,7 +12,7 @@ interface RecipeState {
   updateRecipe: (id: string, updates: Partial<Recipe>) => Promise<void>;
 }
 
-export const useRecipeStore = create<RecipeState>((set, get) => ({
+export const useRecipeStore = create<RecipeState>((set) => ({
   recipes: [],
   loading: false,
   error: null,
@@ -33,8 +33,8 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
 
       if (error) throw error;
       set({ recipes: (data as unknown as Recipe[]) || [] });
-    } catch (err: any) {
-      set({ error: err.message });
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : String(err) });
       console.error('Fetch recipes error:', err);
     } finally {
       set({ loading: false });
@@ -61,9 +61,9 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
       if (error) throw error;
 
       set((state) => ({ recipes: [data as unknown as Recipe, ...state.recipes] }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Add recipe error:', err);
-      set({ error: err.message });
+      set({ error: err instanceof Error ? err.message : String(err) });
       throw err;
     } finally {
       set({ loading: false });
@@ -76,9 +76,9 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
       const { error } = await supabase.from('recipes').delete().eq('id', id);
       if (error) throw error;
       set((state) => ({ recipes: state.recipes.filter((r) => r.id !== id) }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Delete recipe error:', err);
-      set({ error: err.message });
+      set({ error: err instanceof Error ? err.message : String(err) });
       throw err;
     } finally {
       set({ loading: false });
@@ -97,9 +97,9 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
       set((state) => ({
         recipes: state.recipes.map((r) => (r.id === id ? { ...r, ...updates } : r)),
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Update recipe error:', err);
-      set({ error: err.message });
+      set({ error: err instanceof Error ? err.message : String(err) });
       throw err;
     } finally {
       set({ loading: false });

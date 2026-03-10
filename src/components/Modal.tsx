@@ -13,22 +13,64 @@ interface ModalProps {
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer }) => {
   useEffect(() => {
     if (isOpen) {
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.dataset.modalScrollY = String(scrollY);
+
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const shouldCompensate = scrollbarWidth > 0 && window.matchMedia('(pointer: fine)').matches;
+      if (shouldCompensate) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+
       document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.height = '100%';
+
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-      document.body.style.overscrollBehavior = 'none';
     } else {
+      const saved = document.body.dataset.modalScrollY;
+
       document.documentElement.style.overflow = '';
+      document.documentElement.style.height = '';
+
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-      document.body.style.overscrollBehavior = '';
+      document.body.style.paddingRight = '';
+
+      if (saved) {
+        const y = Number.parseInt(saved, 10);
+        if (Number.isFinite(y)) window.scrollTo(0, y);
+      }
+      delete document.body.dataset.modalScrollY;
     }
 
     return () => {
+      const saved = document.body.dataset.modalScrollY;
+
       document.documentElement.style.overflow = '';
+      document.documentElement.style.height = '';
+
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
       document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-      document.body.style.overscrollBehavior = '';
+      document.body.style.paddingRight = '';
+
+      if (saved) {
+        const y = Number.parseInt(saved, 10);
+        if (Number.isFinite(y)) window.scrollTo(0, y);
+      }
+      delete document.body.dataset.modalScrollY;
     };
   }, [isOpen]);
 

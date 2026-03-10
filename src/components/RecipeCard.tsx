@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Recipe } from '../types';
-import { Star, Clock, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { Star, ChefHat, X, ChevronLeft, ChevronRight, MoreHorizontal, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ConfirmModal from './ConfirmModal';
 

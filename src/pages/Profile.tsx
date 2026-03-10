@@ -22,46 +22,45 @@ const Profile: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    getProfile();
-  }, []);
+    const run = async () => {
+      try {
+        setLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
 
-  const getProfile = async () => {
-    try {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate('/auth');
+          return;
+        }
 
-      if (!user) {
-        navigate('/auth');
-        return;
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.warn(error);
+        }
+
+        if (data) {
+          setProfile(data);
+        } else {
+          setProfile({
+            id: user.id,
+            name: user.email?.split('@')[0] || 'User',
+            avatar_url: null,
+            bio: '',
+          });
+        }
+      } catch (error) {
+        console.error('Error loading user data!', error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.warn(error);
-      }
-
-      if (data) {
-        setProfile(data);
-      } else {
-        // Fallback if profile doesn't exist yet (though trigger should handle it)
-        setProfile({
-          id: user.id,
-          name: user.email?.split('@')[0] || 'User',
-          avatar_url: null,
-          bio: '',
-        });
-      }
-    } catch (error) {
-      console.error('Error loading user data!', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    void run();
+  }, [navigate]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {

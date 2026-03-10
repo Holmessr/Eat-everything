@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -7,7 +7,10 @@ import { X, Upload, Plus, Loader2 } from 'lucide-react';
 import { Shop } from '../types';
 import { useTranslation } from 'react-i18next';
 import { useImageUpload } from '../hooks/useImageUpload';
+import toast from 'react-hot-toast';
 import Modal from './Modal';
+import { extractShopFields, requestOcr } from '../lib/ocr';
+import { compressImageForOcr } from '../utils/imageCompression';
 
 const shopFormSchema = z.object({
   name: z.string().min(1, 'required'),
@@ -31,6 +34,8 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
   const { t } = useTranslation();
   const { addShop, updateShop, loading } = useShopStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [ocrImage, setOcrImage] = useState<string | null>(null);
+  const [isRecognizing, setIsRecognizing] = useState(false);
   
   const {
     images: detailImages,
@@ -49,7 +54,6 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
     watch,
     formState: { errors },
   } = useForm<ShopFormValues>({
-    // @ts-ignore
     resolver: zodResolver(shopFormSchema),
     defaultValues: {
       type: 'delivery', // Default to delivery
@@ -72,6 +76,7 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       setValue('address', editShop.address || '');
       setValue('platform_link', editShop.platform_link || '');
       setDetailImages(editShop.images || []);
+      setOcrImage(null);
     } else {
       reset({
         name: '',
@@ -83,11 +88,48 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
         platform_link: '',
       });
       setDetailImages([]);
+      setOcrImage(null);
     }
   }, [editShop, setValue, reset, isOpen, setDetailImages]);
 
-  const onCoverImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleCoverImageUpload(e, (url) => setValue('image_url', url));
+  const onCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    await handleCoverImageUpload(e, (url) => setValue('image_url', url));
+    if (!file) {
+      return;
+    }
+    try {
+      const nextOcrImage = await compressImageForOcr(file);
+      setOcrImage(nextOcrImage);
+    } catch {
+      setOcrImage(null);
+    }
+  };
+
+  const onRecognizeClick = async () => {
+    if (!ocrImage || isRecognizing) return;
+    setIsRecognizing(true);
+    const toastId = toast.loading('识别中...');
+    try {
+      const res = await requestOcr(ocrImage);
+      if (!res.success || !res.text) {
+        toast.dismiss(toastId);
+        return;
+      }
+
+      const fields = extractShopFields(res.text);
+      const currentName = watch('name');
+      const currentAddress = watch('address');
+
+      if (!currentName && fields.name) setValue('name', fields.name);
+      if (!currentAddress && fields.address) setValue('address', fields.address);
+
+      toast.dismiss(toastId);
+    } catch {
+      toast.dismiss(toastId);
+    } finally {
+      setIsRecognizing(false);
+    }
   };
 
   const onSubmit = async (data: ShopFormValues) => {
@@ -106,7 +148,6 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       if (editShop) {
         await updateShop(editShop.id, shopData);
       } else {
-        // @ts-ignore
         await addShop(shopData);
       }
       
@@ -139,7 +180,17 @@ const AddShopModal: React.FC<AddShopModalProps> = ({ isOpen, onClose, editShop }
       <form id="shop-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Cover Image - Upload Only */}
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('shops.form.cover')}</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">{t('shops.form.cover')}</label>
+              <button
+                type="button"
+                onClick={onRecognizeClick}
+                disabled={!ocrImage || isRecognizing}
+                className="text-xs px-2 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRecognizing ? '识别中...' : '识别'}
+              </button>
+            </div>
             <div className="space-y-2">
                 {watch('image_url') ? (
                     <div className="relative h-32 w-full rounded-lg overflow-hidden bg-gray-100 group">

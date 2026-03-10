@@ -12,6 +12,8 @@ Vercel 是部署 React 应用最简单的方式，同时也支持 Serverless Fun
     *   `VITE_SUPABASE_URL`: 你的 Supabase 项目 URL
     *   `VITE_SUPABASE_ANON_KEY`: 你的 Supabase Anon Key
     *   `DEEPSEEK_API_KEY`: 你的 DeepSeek API Key (仅后端 Function 可见)
+    *   `BAIDU_OCR_API_KEY`: 你的百度智能云 OCR API Key (仅后端 Function 可见)
+    *   `BAIDU_OCR_SECRET_KEY`: 你的百度智能云 OCR Secret Key (仅后端 Function 可见)
     *   `VITE_API_BASE_URL`: **留空不填** (生产环境会自动使用同源 API 调用 `/api/ai/recommend`)
 5.  **部署**: 点击 **Deploy**。等待构建完成后，Vercel 会提供一个访问域名（如 `eat-everything.vercel.app`）。
 

@@ -1,7 +1,6 @@
 /**
  * local server entry file, for local development
  */
-import express from 'express';
 import app from './app.js';
 
 /**
@@ -10,12 +9,11 @@ import app from './app.js';
 const PORT = process.env.PORT || 3001;
 
 const startServer = (port: number) => {
-  // @ts-ignore
   const server = app.listen(port, () => {
     console.log(`Server ready on port ${port}`);
   });
 
-  server.on('error', (e: any) => {
+  server.on('error', (e: NodeJS.ErrnoException) => {
     if (e.code === 'EADDRINUSE') {
       console.log(`Port ${port} is busy, trying ${port + 1}...`);
       startServer(port + 1);

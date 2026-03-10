@@ -7,12 +7,12 @@ interface ShopState {
   loading: boolean;
   error: string | null;
   fetchShops: () => Promise<void>;
-  addShop: (shop: Omit<Shop, 'id' | 'user_id'>) => Promise<void>;
+  addShop: (shop: Omit<Shop, 'id' | 'user_id' | 'visit_count'>) => Promise<void>;
   removeShop: (id: string) => Promise<void>;
   updateShop: (id: string, updates: Partial<Shop>) => Promise<void>;
 }
 
-export const useShopStore = create<ShopState>((set, get) => ({
+export const useShopStore = create<ShopState>((set) => ({
   shops: [],
   loading: false,
   error: null,
@@ -33,8 +33,8 @@ export const useShopStore = create<ShopState>((set, get) => ({
 
       if (error) throw error;
       set({ shops: (data as unknown as Shop[]) || [] });
-    } catch (err: any) {
-      set({ error: err.message });
+    } catch (err: unknown) {
+      set({ error: err instanceof Error ? err.message : String(err) });
       console.error('Fetch shops error:', err);
     } finally {
       set({ loading: false });
@@ -61,9 +61,9 @@ export const useShopStore = create<ShopState>((set, get) => ({
       if (error) throw error;
 
       set((state) => ({ shops: [data as unknown as Shop, ...state.shops] }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Add shop error:', err);
-      set({ error: err.message });
+      set({ error: err instanceof Error ? err.message : String(err) });
       throw err;
     } finally {
       set({ loading: false });
@@ -76,9 +76,9 @@ export const useShopStore = create<ShopState>((set, get) => ({
       const { error } = await supabase.from('shops').delete().eq('id', id);
       if (error) throw error;
       set((state) => ({ shops: state.shops.filter((s) => s.id !== id) }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Delete shop error:', err);
-      set({ error: err.message });
+      set({ error: err instanceof Error ? err.message : String(err) });
       throw err;
     } finally {
       set({ loading: false });
@@ -97,9 +97,9 @@ export const useShopStore = create<ShopState>((set, get) => ({
       set((state) => ({
         shops: state.shops.map((s) => (s.id === id ? { ...s, ...updates } : s)),
       }));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Update shop error:', err);
-      set({ error: err.message });
+      set({ error: err instanceof Error ? err.message : String(err) });
       throw err;
     } finally {
       set({ loading: false });

@@ -8,7 +8,7 @@ interface UseImageUploadReturn {
   handleCoverImageUpload: (
     e: React.ChangeEvent<HTMLInputElement>,
     onSuccess: (url: string) => void
-  ) => Promise<void>;
+  ) => Promise<string | null>;
   removeImage: (index: number) => void;
   isUploading: boolean;
 }
@@ -43,12 +43,15 @@ export const useImageUpload = (initialImages: string[] = []): UseImageUploadRetu
         try {
           const compressedDataUrl = await compressImage(file); // Use defaults
           onSuccess(compressedDataUrl);
+          return compressedDataUrl;
         } catch (error) {
           console.error('Error compressing cover image:', error);
+          return null;
         } finally {
           setIsUploading(false);
         }
       }
+      return null;
     },
     []
   );

@@ -35,8 +35,8 @@ const Auth: React.FC = () => {
         toast.success(t('auth.registerSuccess'));
         setIsLogin(true);
       }
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
